@@ -13,8 +13,8 @@ setup(
     description='',
     entry_points={
         "console_scripts": [
-            "part = parts:__run",
-            "sf = subfolder:__run",
+            "parts = justin_utils.parts:__run",
+            "sf = justin_utils.subfolder:__run",
         ]
     }
 )
