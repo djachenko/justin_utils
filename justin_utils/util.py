@@ -1,7 +1,9 @@
 import glob
-import time
+import random
 from collections.abc import Sequence
+from datetime import time, date, datetime
 from pathlib import Path
+from time import process_time
 from typing import Iterable, TypeVar, Callable, Dict, Any, List, Generator
 
 T = TypeVar("T")
@@ -13,8 +15,6 @@ def split_by_predicates(seq: Iterable[T], *lambdas: Callable[[T], bool]) -> Iter
 
 
 def ask_for_permission(question: str) -> bool:
-    time.process_time()
-
     while True:
         answer_input = input(f"{question} y/n ")
 
@@ -51,11 +51,11 @@ def measure_time(name=None):
 
     def decorator(func):
         def inner(*args, **kwargs):
-            start = time.process_time()
+            start = process_time()
 
             result = func(*args, **kwargs)
 
-            end = time.process_time()
+            end = process_time()
 
             passed = end - start
 
@@ -97,14 +97,8 @@ def distinct(items: Iterable[T]) -> List[T]:
     return list(set(items))
 
 
-def is_distinct(seq: List[T], key: Callable[[T], None] = None) -> bool:
-    if key is None:
-        def identity(x):
-            return x
-
-        key = identity
-
-    return len(set(key(item) for item in seq)) == len(seq)
+def is_distinct(seq: List[T], key: Callable[[T], Any] = lambda x: x) -> bool:
+    return len(set(map(key, seq))) == len(seq)
 
 
 def is_iterable(obj: Any) -> bool:
@@ -115,16 +109,40 @@ def all_same_type(seq: Iterable) -> bool:
     return same(type(i) for i in seq)
 
 
-def same(seq: Iterable):
+def same(seq: Iterable) -> bool:
     if not seq:
         return False
 
-    example = None
+    return len(set(seq)) == 1
 
-    for item in seq:
-        if example and item != example:
-            return False
 
-        example = item
+def parse_time(string: str) -> time:
+    separator = ":"
 
-    return True
+    string = string.replace(".", separator)
+
+    parts = string.split(separator)
+
+    parts = [part.zfill(2) for part in parts]
+
+    string = separator.join(parts)
+
+    result = time.fromisoformat(string)
+
+    return result
+
+
+def random_date(start: time, end: time, count: int):
+    today = date.today()
+
+    time_delta = datetime.combine(today, end) - datetime.combine(today, start)
+    minutes_delta = int(time_delta.total_seconds() / 60) - 1
+
+    start_in_minutes = start.hour * 60 + start.minute
+
+    for _ in range(count):
+        time_in_minutes = start_in_minutes + random.randint(0, minutes_delta)
+
+        result = time(hour=time_in_minutes // 60, minute=time_in_minutes % 60)
+
+        yield result
