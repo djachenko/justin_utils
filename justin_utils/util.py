@@ -1,10 +1,11 @@
 import glob
 import random
+from collections import defaultdict
 from collections.abc import Sequence
 from datetime import time, date, datetime
 from pathlib import Path
 from time import process_time
-from typing import Iterable, TypeVar, Callable, Dict, Any, List, Generator
+from typing import Iterable, TypeVar, Callable, Dict, Any, List
 
 T = TypeVar("T")
 V = TypeVar("V")
@@ -81,7 +82,7 @@ def concat_dictionaries(*dictionaries: Dict[T, Any]) -> Dict[T, Any]:
     return result
 
 
-def resolve_patterns(patterns: List[str]) -> Generator[Path, None, None]:
+def resolve_patterns(*patterns: str) -> Iterable[Path]:
     for pattern in patterns:
         for str_path in glob.iglob(pattern):
             path = Path(str_path).absolute()
@@ -89,8 +90,14 @@ def resolve_patterns(patterns: List[str]) -> Generator[Path, None, None]:
             yield path
 
 
-def flatten(list_of_lists: Iterable[List[T]]) -> List[T]:
-    return [item for sublist in list_of_lists for item in sublist]
+def flatten_lazy(list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
+    for sublist in list_of_lists:
+        for item in sublist:
+            yield item
+
+
+def flatten(list_of_lists: Iterable[Iterable[T]]) -> List[T]:
+    return list(flatten_lazy(list_of_lists))
 
 
 def distinct(items: Iterable[T]) -> List[T]:
@@ -132,6 +139,26 @@ def parse_time(string: str) -> time:
     return result
 
 
+def parse_date(string: str) -> date:
+    separator = "."
+
+    day, month, *year_list = [int(i) for i in string.split(separator)]
+
+    today_year = date.today().year
+
+    if not year_list:
+        year = today_year
+    else:
+        year = year_list[0]
+
+    if year <= today_year:
+        year += 2000
+    elif year < 100:
+        year += 1900
+
+    return date(year, month, day)
+
+
 def random_date(start: time, end: time, count: int):
     today = date.today()
 
@@ -146,3 +173,49 @@ def random_date(start: time, end: time, count: int):
         result = time(hour=time_in_minutes // 60, minute=time_in_minutes % 60)
 
         yield result
+
+
+def group_by(key: Callable[[T], V], seq: Iterable[T]) -> Dict[V, List[T]]:
+    mapping = defaultdict(lambda: [])
+
+    for i in seq:
+        mapping[key(i)].append(i)
+
+    return mapping
+
+
+def stride(seq: Iterable[T], step: int) -> Iterable[Iterable[T]]:
+    # i = iter(seq)
+    #
+    # def inner() -> Iterable[T]:
+    #     for j in range(step):
+    #         print(j)
+    #
+    #         yield next(i)
+    #
+    # while True:
+    #     try:
+    #         yield inner()
+    #     except StopIteration:
+    #         break
+    #
+    current = []
+
+    for i in seq:
+        current.append(i)
+
+        if len(current) == step:
+            yield current
+
+            current = []
+
+    if current:
+        yield current
+
+
+def first(seq: Iterable[T], key: Callable[[bool], T] = lambda x: x, default: T = None) -> T | None:
+    for i in seq:
+        if key(i):
+            return i
+
+    return default
