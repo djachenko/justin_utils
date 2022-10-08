@@ -2,12 +2,13 @@ from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, asdict
 from enum import Enum
-from typing import Any, Iterable, Dict, ClassVar, Type, Callable, Union, List
+from typing import Any, Iterable, Dict, ClassVar, Type, Callable, List, TypeVar
 
 from justin_utils.util import is_distinct
 
 Context = Any
 
+T = TypeVar("T")
 
 @dataclass
 class Parameter:
@@ -19,15 +20,15 @@ class Parameter:
     nargs: str = None
     default: Any = None
     action: Action = None
-    type: Union[Type, Callable[[str], Any]] = None
-    choices: Iterable[str] = None
+    type: Type | Callable[[str], T] = None
+    choices: Iterable[T] = None
 
     not_kw_fields: ClassVar[Iterable[str]] = [
         "name",
         "flags",
     ]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.flags is None:
             self.flags = ()
         else:
@@ -47,6 +48,9 @@ class Parameter:
 
 
 class Action:
+    def configure_subparser(self, subparser: ArgumentParser) -> None:
+        pass
+
     @property
     def parameters(self) -> List[Parameter]:
         return []
@@ -82,14 +86,14 @@ class Command:
     def name(self) -> str:
         return self.__name
 
-    def configure_parser(self, parser_adder):
+    def configure_parser(self, parser_adder) -> None:
         subparser: ArgumentParser = parser_adder.add_parser(self.__name)
 
-        self.__configure_subparser(subparser)
+        self.configure_subparser(subparser)
 
         self.__setup_callback(subparser)
 
-    def __configure_subparser(self, subparser: ArgumentParser):
+    def configure_subparser(self, subparser: ArgumentParser) -> None:
         params_set = set()
 
         for action in self.__actions:
@@ -100,10 +104,12 @@ class Command:
                 subparser.add_argument(*parameter.name_or_flags, **parameter.params)
                 params_set.add(parameter.name_or_flags)
 
-    def __setup_callback(self, parser: ArgumentParser):
-        parser.set_defaults(func=self.run)
+            action.configure_subparser(subparser)
 
-    def run(self, args: Namespace, context: Context) -> None:
+    def __setup_callback(self, parser: ArgumentParser) -> None:
+        parser.set_defaults(command=self)
+
+    def __call__(self, args: Namespace, context: Context) -> None:
         for action in self.__actions:
             action.perform(args, context)
 
@@ -117,7 +123,7 @@ class App:
         self.__commands = commands
         self.__context = context
 
-    def run(self, args: Iterable[str] = None):
+    def run(self, args: Iterable[str] = None) -> None:
         parser = ArgumentParser()
 
         parser_adder = parser.add_subparsers()
@@ -127,9 +133,11 @@ class App:
 
         namespace = parser.parse_args(args)
 
-        if not hasattr(namespace, "func") or not namespace.func or not isinstance(namespace.func, Callable):
-            print("no parameters is bad")
-
-            return
-
-        namespace.func(namespace, self.__context)
+        if not hasattr(namespace, "command"):
+            print("No parameters is bad")
+        elif not namespace.command:
+            print("No command found.")
+        elif not isinstance(namespace.command, Command):
+            print("Wrong command class")
+        else:
+            namespace.command(namespace, self.__context)
