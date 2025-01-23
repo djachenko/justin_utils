@@ -49,17 +49,20 @@ class PartsAction(Action, ABC):
     @property
     def parameters(self) -> List[Parameter]:
         return super().parameters + [
-            Parameter("root", nargs="?", default="."),
+            Parameter("root", nargs="*", default=["."]),
         ]
 
     def perform(self, args: Namespace, context: Context) -> None:
-        pattern: str = args.root
+        for pattern in args.root:
+            for str_path in glob.iglob(pattern):
+                path = Path(str_path).absolute()
 
-        for str_path in glob.iglob(pattern):
-            path = Path(str_path).absolute()
-            parts = self.get_parts(path)
+                if not path.is_dir():
+                    continue
 
-            self.perform_for_root(path, parts, args)
+                parts = self.get_parts(path)
+
+                self.perform_for_root(path, parts, args)
 
     @abstractmethod
     def perform_for_root(self, root: Path, parts: List[Part], args: Namespace):
@@ -161,8 +164,15 @@ class RenumberAction(PartsAction):
         ]
 
     def perform_for_root(self, root: Path, parts: List[Part], args: Namespace):
-
         parts_count = len(parts)
+
+        if parts_count == 1:
+            part = parts[0]
+
+            for item in part.path.iterdir():
+                item.rename(root / item.name)
+
+            return
 
         parts.sort(key=lambda x: x.index)
 
@@ -182,7 +192,6 @@ class RenumberAction(PartsAction):
 
 
 class OffsetAction(PartsAction):
-
     @property
     def parameters(self) -> List[Parameter]:
         return super().parameters + [
