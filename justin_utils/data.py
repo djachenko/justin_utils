@@ -1,7 +1,7 @@
 from datetime import timedelta
 from enum import Enum
 from functools import lru_cache
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class DataSize:
@@ -95,6 +95,12 @@ class DataSize:
             return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
         else:
             assert False
+
+    def __lt__(self, other: Union['DataSize', int]) -> bool:
+        if isinstance(other, DataSize):
+            other = other.__bytes
+
+        return self.__bytes < other
 
 
 class DataSpeed:
