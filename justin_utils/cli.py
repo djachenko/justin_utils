@@ -10,6 +10,7 @@ Context = Any
 
 T = TypeVar("T")
 
+
 @dataclass
 class Parameter:
     class Action(str, Enum):
@@ -61,7 +62,6 @@ class Action:
 
 
 class Command:
-
     def __init__(self, name: str, actions: Iterable[Action], allowed_same_parameters: Iterable[str] = ()) -> None:
         super().__init__()
 
