@@ -27,7 +27,49 @@ def ask_for_permission(question: str) -> bool:
             return answer
 
 
-def ask_for_choice(question: str, options: List[T]) -> T:
+def ask_for_choice_flagged(question: str, options: List[str]) -> str | None:
+    print(question)
+
+    for index, option in enumerate(options):
+        print(f"{index}: {option}")
+
+    print(f"-: abort")
+    print(f"\"\": empty")
+
+    answer = input("Enter chosen option: ")
+
+    if answer == "-":
+        return None
+    elif answer == "":
+        return ""
+    elif answer.isdecimal():
+        option_index = int(answer)
+
+        if option_index in range(0, len(options)):
+            return options[option_index]
+
+    return answer
+
+
+def ask_for_choice_with_other(question: str, options: List[str]) -> str:
+    other = "other"
+
+    options.append(other)
+
+    option = ask_for_choice(question, options)
+
+    if option == other:
+        option = input("> ")
+
+    return option
+
+
+def ask_for_choice(question: str, options: List[T]) -> T | str:
+    assert len(options) > 0
+
+    if len(options) == 1:
+        return options[0]
+
     print(question)
 
     for index, option in enumerate(options):
@@ -39,7 +81,7 @@ def ask_for_choice(question: str, options: List[T]) -> T:
         try:
             option_index = int(answer)
 
-            if 0 <= option_index < len(options):
+            if option_index in range(0, len(options)):
                 return options[option_index]
 
         except ValueError:
@@ -96,7 +138,7 @@ def flatten_lazy(list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
             yield item
 
 
-def flatten(list_of_lists: Iterable[Iterable[T]]) -> List[T]:
+def flat_map(list_of_lists: Iterable[Iterable[T]]) -> List[T]:
     return list(flatten_lazy(list_of_lists))
 
 
@@ -117,9 +159,6 @@ def all_same_type(seq: Iterable) -> bool:
 
 
 def same(seq: Iterable) -> bool:
-    if not seq:
-        return False
-
     return len(set(seq)) == 1
 
 
@@ -213,9 +252,40 @@ def stride(seq: Iterable[T], step: int) -> Iterable[Iterable[T]]:
         yield current
 
 
-def first(seq: Iterable[T], key: Callable[[bool], T] = lambda x: x, default: T = None) -> T | None:
+def first(seq: Iterable[T], key: Callable[[T], bool] = lambda x: x, default: T = None) -> T | None:
     for i in seq:
         if key(i):
             return i
 
     return default
+
+
+def bfs(start: T, provider: Callable[[T], Iterable[T]]) -> None:
+    roots = [start]
+
+    while roots:
+        roots += provider(roots.pop(0))
+
+
+def get_prefixes(s: str, separator: str) -> List[str]:
+    prefixes = []
+    split = s.split(separator)
+
+    for i in range(1, len(split) + 1):
+        prefixes.append(separator.join(split[:i]))
+
+    return prefixes
+
+
+def merge_dicts(merger: Callable[[V, V], V], *dicts: Dict[T, V]) -> Dict[T, V]:
+    result = {}
+
+    for d in dicts:
+        for key in d:
+            if key in result:
+                result[key] = merger(result[key], d[key])
+            else:
+                result[key] = d[key]
+
+    return result
+
