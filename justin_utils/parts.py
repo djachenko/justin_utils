@@ -65,7 +65,7 @@ class PartsAction(Action, ABC):
                 self.perform_for_root(path, parts, args)
 
     @abstractmethod
-    def perform_for_root(self, root: Path, parts: List[Part], args: Namespace):
+    def perform_for_root(self, root: Path, parts: List[Part], args: Namespace) -> None:
         pass
 
     @staticmethod

@@ -62,7 +62,7 @@ class DataSize:
     def __as_unit(self, unit: Unit) -> float:
         return self.__bytes / unit.size
 
-    def add_bytes(self, bytes_: int):
+    def add_bytes(self, bytes_: int) -> None:
         self.__bytes += bytes_
 
     @classmethod

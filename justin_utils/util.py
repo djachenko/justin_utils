@@ -143,7 +143,15 @@ def flat_map(list_of_lists: Iterable[Iterable[T]]) -> List[T]:
 
 
 def distinct(items: Iterable[T]) -> List[T]:
-    return list(set(items))
+    cache = set()
+    result = []
+
+    for item in items:
+        if item not in cache:
+            cache.add(item)
+            result.append(item)
+
+    return result
 
 
 def is_distinct(seq: List[T], key: Callable[[T], Any] = lambda x: x) -> bool:
@@ -289,3 +297,22 @@ def merge_dicts(merger: Callable[[V, V], V], *dicts: Dict[T, V]) -> Dict[T, V]:
 
     return result
 
+
+K = TypeVar("K")
+
+
+class keydefaultdict(dict[K, V]):
+    def __init__(self, default_factory: Callable[[K], V], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.default_factory = default_factory
+
+    def __missing__(self, key: K) -> V:
+        if self.default_factory is None:
+            raise KeyError(key)
+        else:
+            result = self.default_factory(key)
+
+            self[key] = result
+
+            return result
