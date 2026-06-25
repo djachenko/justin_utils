@@ -114,8 +114,8 @@ class PartsAction(Action, ABC):
             part.name
         ]
 
-        new_name_parts = [i for i in new_name_parts if i]
-        new_name = SEPARATOR.join(new_name_parts)
+        name_parts: list[str] = [i for i in new_name_parts if i]
+        new_name = SEPARATOR.join(name_parts)
 
         return new_name
 

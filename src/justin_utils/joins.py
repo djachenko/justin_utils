@@ -12,12 +12,12 @@ def full_outer(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool])
 
     inclusion_mapping = [{e: False for e in seq} for seq in [seq1, seq2]]
 
-    result = itertools.product(*sequences)
+    result = itertools.product(*sequences)  # type: ignore[var-annotated]
 
     def unwrapper(t):
         return on(*t)
 
-    result = list(filter(unwrapper, result))
+    result = list(filter(unwrapper, result))  # type: ignore[assignment]
 
     for joining in result:
         for i, element in enumerate(joining):
@@ -28,14 +28,13 @@ def full_outer(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool])
             if not state:
                 pre_tuple = [None for _ in sequences]
 
-                pre_tuple[i] = element
+                pre_tuple[i] = element  # type: ignore[call-overload]
 
                 joining = tuple(pre_tuple)
 
-                result.append(joining)
+                result.append(joining)  # type: ignore[attr-defined, arg-type]
 
-    # noinspection PyTypeChecker
-    return result
+    return result  # type: ignore[return-value]
 
 
 def inner(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[Tuple[T, V]]:
