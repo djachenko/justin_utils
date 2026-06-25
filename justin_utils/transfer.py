@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 from justin_utils.data import DataSize, DataSpeed
 
@@ -54,7 +54,7 @@ class TransferSpeedMeter:
 
 class TransferTimeEstimator:
     @staticmethod
-    def estimate(speed: DataSpeed, remaining_size: DataSize) -> Optional[timedelta]:
+    def estimate(speed: DataSpeed, remaining_size: DataSize) -> timedelta:
         remaining_time = remaining_size / speed
 
         return remaining_time

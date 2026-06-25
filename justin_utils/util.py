@@ -154,8 +154,16 @@ def distinct(items: Iterable[T]) -> List[T]:
     return result
 
 
-def is_distinct(seq: List[T], key: Callable[[T], Any] = lambda x: x) -> bool:
-    return len(set(map(key, seq))) == len(seq)
+def is_distinct(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool:
+    try:
+        # noinspection PyTypeChecker
+        seq_len = len(seq)
+    except TypeError:
+        seq = list(seq)
+
+        seq_len = len(seq)
+
+    return len(set(map(key, seq))) == seq_len
 
 
 def is_iterable(obj: Any) -> bool:
@@ -231,7 +239,7 @@ def group_by(key: Callable[[T], V], seq: Iterable[T]) -> Dict[V, List[T]]:
     return mapping
 
 
-def stride(seq: Iterable[T], step: int) -> Iterable[Iterable[T]]:
+def stride(seq: Iterable[T], step: int) -> Iterable[List[T]]:
     # i = iter(seq)
     #
     # def inner() -> Iterable[T]:
