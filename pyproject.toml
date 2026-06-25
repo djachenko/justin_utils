@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "justin_utils"
+version = "0.1.0"
+description = "Utilities for the Justin project"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Igor Djachenko" }]
+requires-python = ">=3.10"
+dependencies = [
+    "justin_utils[util]",
+    "justin_utils[joins]",
+    "justin_utils[singleton]",
+    "justin_utils[pylinq]",
+    "justin_utils[other]",
+    "justin_utils[filesystem]",
+    "justin_utils[cli]",
+    "justin_utils[parts]",
+    "justin_utils[exif]",
+    "justin_utils[sources]",
+]
+
+[project.scripts]
+parts = "justin_utils.parts:__run"
+sf = "justin_utils.subfolder:__run"
+
+[project.optional-dependencies]
+util       = []
+joins      = []
+singleton  = []
+pylinq     = []
+other      = [
+    "justin_utils[singleton]",
+]
+filesystem = [
+    "justin_utils[other]",
+]
+cli        = [
+    "justin_utils[util]",
+]
+parts      = [
+    "justin_utils[cli]",
+]
+exif       = [
+    "Pillow",
+    "python-exif",
+]
+sources    = [
+    "justin_utils[util]",
+    "justin_utils[joins]",
+    "justin_utils[exif]",
+    "justin_utils[filesystem]",
+]
+test       = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+release    = [
+    "build",
+    "python-semantic-release",
+]
+
+[project.urls]
+Homepage   = "https://github.com/djachenko/justin_utils"
+Repository = "https://github.com/djachenko/justin_utils"
+Issues     = "https://github.com/djachenko/justin_utils/issues"
+
+[tool.semantic_release]
+version_toml    = ["pyproject.toml:project.version"]
+branch          = "master"
+commit_message  = "chore(release): v{version} [no ci]"
+major_on_zero   = false
+allow_zero_version = true
