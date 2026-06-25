@@ -1,6 +1,6 @@
 from datetime import timedelta
 from enum import Enum
-from functools import lru_cache
+from functools import cache
 from typing import List, Optional, Union
 
 
@@ -18,7 +18,7 @@ class DataSize:
             self.acronym = acronym
 
         @staticmethod
-        @lru_cache()
+        @cache
         def sorted_units() -> List['DataSize.Unit']:
             return sorted([
                 DataSize.Unit.BYTE,
