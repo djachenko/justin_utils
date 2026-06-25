@@ -33,8 +33,8 @@ def ask_for_choice_flagged(question: str, options: List[str]) -> str | None:
     for index, option in enumerate(options):
         print(f"{index}: {option}")
 
-    print(f"-: abort")
-    print(f"\"\": empty")
+    print("-: abort")
+    print("\"\": empty")
 
     answer = input("Enter chosen option: ")
 
@@ -112,7 +112,7 @@ def measure_time(name=None):
 
 
 def concat_dictionaries(*dictionaries: Dict[T, Any]) -> Dict[T, Any]:
-    result = {}
+    result: Dict[T, Any] = {}
 
     for dictionary in dictionaries:
         keys = dictionary.keys()
@@ -157,11 +157,11 @@ def distinct(items: Iterable[T]) -> List[T]:
 def is_distinct(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool:
     try:
         # noinspection PyTypeChecker
-        seq_len = len(seq)
+        seq_len = len(seq)  # type: ignore[arg-type]
     except TypeError:
         seq = list(seq)
 
-        seq_len = len(seq)
+        seq_len = len(seq)  # type: ignore[arg-type]
 
     return len(set(map(key, seq))) == seq_len
 
@@ -268,7 +268,7 @@ def stride(seq: Iterable[T], step: int) -> Iterable[List[T]]:
         yield current
 
 
-def first(seq: Iterable[T], key: Callable[[T], bool] = lambda x: x, default: T = None) -> T | None:
+def first(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x, default: T | None = None) -> T | None:
     for i in seq:
         if key(i):
             return i
@@ -294,7 +294,7 @@ def get_prefixes(s: str, separator: str) -> List[str]:
 
 
 def merge_dicts(merger: Callable[[V, V], V], *dicts: Dict[T, V]) -> Dict[T, V]:
-    result = {}
+    result: Dict[T, V] = {}
 
     for d in dicts:
         for key in d:

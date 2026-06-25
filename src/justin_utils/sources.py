@@ -21,7 +21,7 @@ class Source(Movable):
 
     @property
     @abstractmethod
-    def exif(self) -> Exif:
+    def exif(self) -> Exif | None:
         pass
 
     @property
@@ -85,7 +85,7 @@ class InternalMetadataSource(Source):
 
     @property
     @cache
-    def exif(self) -> Exif:
+    def exif(self) -> Exif | None:
         return parse_exif(self.__file.path)
 
 
@@ -124,7 +124,7 @@ class ExternalMetadataSource(Source):
 
     @property
     @cache
-    def exif(self) -> Exif:
+    def exif(self) -> Exif | None:
         return parse_exif(self.raw.path)
 
     def files(self) -> List[File]:
@@ -153,7 +153,6 @@ def parse_sources(seq: Iterable[File]) -> List[Source]:
     raws = [ExternalMetadataSource(raw, meta) for raw, meta in join]
     jpegs = [InternalMetadataSource(jpeg) for jpeg in split[2]]
 
-    # noinspection PyTypeChecker
-    sources = raws + jpegs
+    sources: list[Source] = [*raws, *jpegs]
 
     return sources

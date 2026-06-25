@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import platform
 import shutil
 import webbrowser
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
-from typing import List, Dict, Callable, Self, Iterable
+from typing import List, Dict, Callable
+from typing_extensions import Self, Iterable
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time
@@ -350,15 +353,15 @@ class Folder(PathBased):
     def __init__(self, path: Path) -> None:
         super().__init__(path)
 
-        self.__subfolder_mapping: Dict[str, Folder] = None
-        self.__files: List[File] = None
+        self.__subfolder_mapping: Dict[str, Folder] | None = None
+        self.__files: List[File] | None = None
 
     @property
-    def __subfolders(self) -> Dict[str, Self]:
+    def __subfolders(self) -> Dict[str, Folder]:
         if self.__subfolder_mapping is None:
             self.refresh()
 
-        return self.__subfolder_mapping
+        return self.__subfolder_mapping  # type: ignore[return-value]
 
     @property
     def name(self) -> str:
@@ -373,7 +376,7 @@ class Folder(PathBased):
         if self.__files is None:
             self.refresh()
 
-        return self.__files
+        return self.__files  # type: ignore[return-value]
 
     @property
     def total_size(self) -> int:
@@ -382,7 +385,7 @@ class Folder(PathBased):
 
     @property
     def subfolders(self) -> List[Self]:
-        return sorted(list(self.__subfolders.values()), key=lambda x: x.name)
+        return sorted(list(self.__subfolders.values()), key=lambda x: x.name)  # type: ignore[arg-type, return-value]
 
     def __contains__(self, key: str) -> bool:
         return key in self.__subfolders
@@ -402,15 +405,17 @@ class Folder(PathBased):
             return None
 
         if rest:
-            return self[first][rest[0]]
+            subfolder = self[first]
+            return subfolder[rest[0]] if subfolder is not None else None
         else:
-            return self.__subfolders.get(key)
+            return self.__subfolders.get(key)  # type: ignore[return-value]
 
     def __get_by_path(self, path: Path) -> Self | None:
         root, *rest = path.parts
 
         if root in self:
-            return self[root][Path(*rest)]
+            subfolder = self[root]
+            return subfolder[Path(*rest)] if subfolder is not None else None
         else:
             return None
 
@@ -461,7 +466,7 @@ class Folder(PathBased):
                 else:
                     try:
                         child_tree.remove()
-                    except:
+                    except Exception:
                         print(f"Failed to remove empty tree: \"{child_tree}\"")
 
                         self.__subfolders[child.name] = child_tree
@@ -523,7 +528,7 @@ class Folder(PathBased):
     def __hash__(self):
         return hash(self.__key)
 
-    def __eq__(self, other: Self) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, type(self)) and other.__key == self.__key
 
     def __type_copy(self, path: Path) -> Self:
@@ -567,7 +572,7 @@ class FolderBased(PathBased):
 
 
 def parse_paths(paths: List[Path]) -> List[PathBased]:
-    result = []
+    result: List[PathBased] = []
 
     for path in paths:
         if path.is_file():

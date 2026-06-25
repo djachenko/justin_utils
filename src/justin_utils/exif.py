@@ -2,9 +2,10 @@ from abc import abstractmethod, ABC
 from datetime import datetime
 from functools import cache
 from pathlib import Path
-from typing import Iterable, Self
+from typing import Iterable
+from typing_extensions import Self
 
-from exif import Image
+from exif import Image  # type: ignore[import-untyped]
 
 from PIL import ExifTags
 from PIL.Image import Exif as PilExif
@@ -20,6 +21,7 @@ class Exif(ABC):
         return self.date_taken < other.date_taken
 
     @classmethod
+    @abstractmethod
     def from_path(cls, path: Path) -> Self:
         pass
 
@@ -30,10 +32,9 @@ class PillowExif(Exif):
     @property
     @cache
     def date_taken(self) -> datetime:
-        return datetime.strptime(
-            self.__get_tag_value("DateTimeOriginal") or self.__get_tag_value("DateTime"),
-            "%Y:%m:%d %H:%M:%S"
-        )
+        date_str = self.__get_tag_value("DateTimeOriginal") or self.__get_tag_value("DateTime")
+        assert date_str is not None
+        return datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
 
     def __get_tag_value(self, tag: str) -> str | None:
         return self.source_exif.get(PillowExif.__reverse_mapping[tag])
@@ -45,7 +46,7 @@ class PillowExif(Exif):
 
     @classmethod
     def from_path(cls, path: Path) -> Self:
-        return PillowExif(ImageModule.open(path).getexif())
+        return cls(ImageModule.open(path).getexif())
 
 
 class NativeExif(Exif):
@@ -75,7 +76,7 @@ class NativeExif(Exif):
         with path.open("rb") as image_file:
             my_image = Image(image_file)
 
-            return NativeExif(my_image)
+            return cls(my_image)
 
 
 def parse_exif(path: Path) -> Exif | None:
@@ -86,6 +87,8 @@ def parse_exif(path: Path) -> Exif | None:
         return None
 
     suffix = path.suffix.lower()
+
+    exif_class: type[PillowExif] | type[NativeExif]
 
     if suffix in [".nef", ".dng", ]:
         exif_class = PillowExif
