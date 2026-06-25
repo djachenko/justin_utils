@@ -7,7 +7,7 @@ packages = ["src/justin_utils"]
 
 [project]
 name = "justin_utils"
-version = "0.1.0"
+version = "0.0.0"
 description = "Utilities for the Justin project"
 readme = "README.md"
 license = "MIT"
