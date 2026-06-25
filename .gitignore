@@ -125,3 +125,12 @@ dmypy.json
 
 # Session memory
 memory/
+
+# IDE
+.idea/
+
+# Claude Code
+.claude/
+
+# Repo dump
+justin_utils.txt
