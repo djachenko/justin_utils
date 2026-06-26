@@ -206,10 +206,11 @@ def parse_date(string: str) -> date:
     else:
         year = year_list[0]
 
-    if year <= today_year:
-        year += 2000
-    elif year < 100:
-        year += 1900
+    if year < 100:
+        if year <= today_year % 100:
+            year += 2000
+        else:
+            year += 1900
 
     return date(year, month, day)
 
