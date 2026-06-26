@@ -6,8 +6,7 @@ import webbrowser
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
-from typing import List, Dict, Callable
-from typing_extensions import Self, Iterable
+from typing import List, Dict, Callable, Self, Iterable
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time
