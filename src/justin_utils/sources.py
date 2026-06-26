@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from functools import cache
+from functools import cached_property
 from pathlib import Path
 from typing import List, Iterable
 
@@ -83,8 +83,7 @@ class InternalMetadataSource(Source):
     def files(self) -> List[File]:
         return [self.__file]
 
-    @property
-    @cache
+    @cached_property
     def exif(self) -> Exif | None:
         return parse_exif(self.__file.path)
 
@@ -122,8 +121,7 @@ class ExternalMetadataSource(Source):
     def name(self):
         return self.raw.stem
 
-    @property
-    @cache
+    @cached_property
     def exif(self) -> Exif | None:
         return parse_exif(self.raw.path)
 
