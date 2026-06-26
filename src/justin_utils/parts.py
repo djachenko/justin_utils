@@ -25,7 +25,11 @@ class Part:
         name_parts = path.name.split(SEPARATOR, maxsplit=1)
 
         index = int(name_parts[0])
-        name = name_parts[1] if len(name_parts) == 2 else None
+
+        if len(name_parts) == 2:
+            name = name_parts[1]
+        else:
+            name = None
 
         return Part(
             index=index,
@@ -101,7 +105,10 @@ class PartsAction(Action, ABC):
 
     @staticmethod
     def to_padded_string(number: int, length: int, padding: str) -> str:
-        number_len = (int(log10(number)) if number > 0 else 0) + 1
+        if number > 0:
+            number_len = int(log10(number)) + 1
+        else:
+            number_len = 1
 
         parts = [padding] * (length - number_len) + [str(number)]
 
@@ -114,7 +121,7 @@ class PartsAction(Action, ABC):
             part.name
         ]
 
-        name_parts: list[str] = [i for i in new_name_parts if i]
+        name_parts = [i for i in new_name_parts if i is not None]
         new_name = SEPARATOR.join(name_parts)
 
         return new_name

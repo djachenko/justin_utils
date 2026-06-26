@@ -404,18 +404,26 @@ class Folder(PathBased):
 
         if rest:
             subfolder = self[first]
-            return subfolder[rest[0]] if subfolder is not None else None
+
+            if subfolder is None:
+                return None
+
+            return subfolder[rest[0]]
         else:
             return self.__subfolders.get(key)  # type: ignore[return-value]
 
     def __get_by_path(self, path: Path) -> Self | None:
         root, *rest = path.parts
 
-        if root in self:
-            subfolder = self[root]
-            return subfolder[Path(*rest)] if subfolder is not None else None
-        else:
+        if root not in self:
             return None
+
+        subfolder = self[root]
+
+        if subfolder is None:
+            return None
+
+        return subfolder[Path(*rest)]
 
     def flatten(self) -> List[File]:
         result = self.files.copy()
