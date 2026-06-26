@@ -131,9 +131,8 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 
         total_copied.add_bytes(file_size)
 
-    assert __tree_is_empty(src_path)
-
-    __remove_tree(src_path)
+    if __tree_is_empty(src_path):
+        __remove_tree(src_path)
 
     print(f"Processed {len(files)}/{len(files)} files, {total_copied} / {total_size}, {speed_meter.average_value}")
 
