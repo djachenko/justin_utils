@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -48,7 +48,7 @@ class Parameter:
         return {k: v for k, v in asdict(self).items() if k not in Parameter.not_kw_fields and v}
 
 
-class Action:
+class Action(ABC):
     def configure_subparser(self, subparser: ArgumentParser) -> None:
         pass
 
