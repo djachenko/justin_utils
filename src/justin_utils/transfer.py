@@ -8,15 +8,15 @@ class TransferSpeedMeter:
     __HISTORY_SIZE = 6
 
     # noinspection PyTypeChecker
-    def __init__(self):
-        self.__global_start_time: datetime = None
-        self.__global_stop_time: datetime = None
-        self.__total_size: int = None
+    def __init__(self) -> None:
+        self.__global_start_time: datetime | None = None
+        self.__global_stop_time: datetime | None = None
+        self.__total_size: int | None = None
 
-        self.__history_start_time: datetime = None
+        self.__history_start_time: datetime | None = None
         self.__history: List[Tuple[datetime, int]] = []
 
-    def start(self):
+    def start(self) -> None:
         now = datetime.now()
 
         self.__global_start_time = now
@@ -25,8 +25,10 @@ class TransferSpeedMeter:
         self.__history_start_time = now
         self.__history = [(now, 0) for _ in range(TransferSpeedMeter.__HISTORY_SIZE)]
 
-    def feed(self, size: int):
+    def feed(self, size: int) -> None:
         assert len(self.__history) > 0
+
+        assert self.__total_size is not None
 
         now = datetime.now()
 
@@ -42,13 +44,19 @@ class TransferSpeedMeter:
     def current_value(self) -> DataSpeed:
         assert len(self.__history) > 0
 
+        assert self.__history_start_time is not None
+
         total_size = sum(size for _, size in self.__history)
         elapsed_time = self.__history[-1][0] - self.__history_start_time
 
         return DataSpeed(DataSize.from_bytes(total_size), elapsed_time)
 
     @property
-    def average_value(self):
+    def average_value(self) -> DataSpeed:
+        assert self.__global_start_time is not None
+        assert self.__global_stop_time is not None
+        assert self.__total_size is not None
+
         return DataSpeed(DataSize.from_bytes(self.__total_size), self.__global_stop_time - self.__global_start_time)
 
 

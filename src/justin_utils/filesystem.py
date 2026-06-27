@@ -6,8 +6,7 @@ import webbrowser
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
-from typing import List, Dict, Callable
-from typing_extensions import Self, Iterable
+from typing import List, Dict, Callable, Self, Iterable
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time
@@ -132,9 +131,8 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 
         total_copied.add_bytes(file_size)
 
-    assert __tree_is_empty(src_path)
-
-    __remove_tree(src_path)
+    if __tree_is_empty(src_path):
+        __remove_tree(src_path)
 
     print(f"Processed {len(files)}/{len(files)} files, {total_copied} / {total_size}, {speed_meter.average_value}")
 
@@ -406,18 +404,26 @@ class Folder(PathBased):
 
         if rest:
             subfolder = self[first]
-            return subfolder[rest[0]] if subfolder is not None else None
+
+            if subfolder is None:
+                return None
+
+            return subfolder[rest[0]]
         else:
             return self.__subfolders.get(key)  # type: ignore[return-value]
 
     def __get_by_path(self, path: Path) -> Self | None:
         root, *rest = path.parts
 
-        if root in self:
-            subfolder = self[root]
-            return subfolder[Path(*rest)] if subfolder is not None else None
-        else:
+        if root not in self:
             return None
+
+        subfolder = self[root]
+
+        if subfolder is None:
+            return None
+
+        return subfolder[Path(*rest)]
 
     def flatten(self) -> List[File]:
         result = self.files.copy()

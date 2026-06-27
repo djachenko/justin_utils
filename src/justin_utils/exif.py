@@ -1,9 +1,8 @@
 from abc import abstractmethod, ABC
 from datetime import datetime
-from functools import cache
+from functools import cached_property
 from pathlib import Path
-from typing import Iterable
-from typing_extensions import Self
+from typing import Iterable, Self
 
 from exif import Image  # type: ignore[import-untyped]
 
@@ -29,8 +28,7 @@ class Exif(ABC):
 class PillowExif(Exif):
     __reverse_mapping = {v: k for k, v in ExifTags.TAGS.items()}
 
-    @property
-    @cache
+    @cached_property
     def date_taken(self) -> datetime:
         date_str = self.__get_tag_value("DateTimeOriginal") or self.__get_tag_value("DateTime")
         assert date_str is not None
@@ -50,8 +48,7 @@ class PillowExif(Exif):
 
 
 class NativeExif(Exif):
-    @property
-    @cache
+    @cached_property
     def date_taken(self) -> datetime:
         if hasattr(self.source_exif, "datetime_original"):
             return datetime.strptime(
