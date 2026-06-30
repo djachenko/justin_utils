@@ -99,7 +99,7 @@ class ExternalMetadataSource(Source):
         ".xmp",
     ]
 
-    def __init__(self, raw: File, metadata: File):
+    def __init__(self, raw: File, metadata: File | None):
         super().__init__()
 
         assert raw.extension != ".jpg"
