@@ -156,6 +156,8 @@ def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.
             for item in part.path.iterdir():
                 item.rename(root_path / item.name)
 
+            part.path.rmdir()
+
             return
 
         parts.sort(key=lambda x: x.index)
