@@ -49,7 +49,7 @@ class TestDataSizeArithmetic:
         assert isinstance(result, DataSize)
         assert result.canonic_value() == 1024
 
-    def test_sub_non_data_size_asserts(self):
+    def test_sub_non_data_size_raises(self):
         with pytest.raises(AssertionError):
             DataSize(1024) - 512
 
@@ -69,7 +69,7 @@ class TestDataSizeArithmetic:
 
         assert DataSize(2048) / speed is None
 
-    def test_truediv_invalid_type_asserts(self):
+    def test_truediv_invalid_type_raises(self):
         with pytest.raises(AssertionError):
             DataSize(1024) / 2
 
@@ -113,6 +113,6 @@ class TestDataSpeed:
         (1024, timedelta(seconds=1)),
         (DataSize(1024), 1),
     ])
-    def test_invalid_constructor_args_assert(self, amount, time):
+    def test_invalid_constructor_args_raises(self, amount, time):
         with pytest.raises(AssertionError):
             DataSpeed(amount, time)

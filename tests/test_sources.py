@@ -88,13 +88,13 @@ class TestExternalMetadataSource:
 
         assert source.mtime == -1
 
-    def test_jpg_raw_asserts(self, temp_dir):
+    def test_jpg_raw_raises(self, temp_dir):
         raw = _stemmed_file(temp_dir, STEM, ".jpg")
 
         with pytest.raises(AssertionError):
             ExternalMetadataSource(raw, None)
 
-    def test_mismatched_stems_assert(self, temp_dir):
+    def test_mismatched_stems_raises(self, temp_dir):
         raw = _stemmed_file(temp_dir, STEM, ".nef")
         metadata = _stemmed_file(temp_dir, OTHER_STEM, ".xmp")
 

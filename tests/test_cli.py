@@ -71,7 +71,7 @@ class TestCommand:
 
             assert command.name == "cmd"
 
-    def test_name_with_spaces_asserts(self):
+    def test_name_with_spaces_raises(self):
         with pytest.raises(AssertionError):
             Command("bad name", [])
 
@@ -90,7 +90,7 @@ class TestCommand:
 
 
 class TestApp:
-    def test_duplicate_command_names_assert(self):
+    def test_duplicate_command_names_raises(self):
         with pytest.raises(AssertionError):
             App([
                 Command("cmd", [_RecordingAction()]),

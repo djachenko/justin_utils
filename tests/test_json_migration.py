@@ -25,7 +25,7 @@ def migrator():
 
 
 class TestJsonMigrator:
-    def test_register_duplicate_version_asserts(self, migrator):
+    def test_register_duplicate_version_raises(self, migrator):
         migrator.register(_Migration(1, "a"))
 
         with pytest.raises(AssertionError):
