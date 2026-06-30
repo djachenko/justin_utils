@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.2.2 (2026-06-30)
+
+### Bug Fixes
+
+- Allow None for metadata in ExternalMetadataSource type hint
+  ([`eac8d77`](https://github.com/djachenko/justin_utils/commit/eac8d77efc69eefe7ebede1df76ebfb1aaca7b52))
+
+### Chores
+
+- Mark cli.py public classes as deprecated
+  ([`00d95a7`](https://github.com/djachenko/justin_utils/commit/00d95a70ff0e3c0c9d97e11784992b63de8cbb49))
+
+
 ## v0.2.1 (2026-06-30)
 
 ### Bug Fixes
