@@ -93,12 +93,14 @@ class TestMake:
 
 class TestRenumber:
     def test_resequences_with_gaps(self, temp_dir):
-        (temp_dir / "1.intro").mkdir()
-        (temp_dir / "5.outro").mkdir()
+        first_name, second_name = "intro", "outro"
+
+        (temp_dir / f"1.{first_name}").mkdir()
+        (temp_dir / f"5.{second_name}").mkdir()
 
         renumber(root=[str(temp_dir)], width=None)
 
-        assert sorted(p.name for p in temp_dir.iterdir()) == ["1.intro", "2.outro"]
+        assert sorted(p.name for p in temp_dir.iterdir()) == [f"1.{first_name}", f"2.{second_name}"]
 
     def test_width_option(self, temp_dir):
         (temp_dir / "1").mkdir()
