@@ -44,6 +44,7 @@ filesystem = [
 ]
 cli        = [
     "justin_utils[util]",
+    "typer",
 ]
 parts      = [
     "justin_utils[cli]",
