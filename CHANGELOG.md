@@ -2,6 +2,63 @@
 
 <!-- version list -->
 
+## v0.2.1 (2026-06-30)
+
+### Bug Fixes
+
+- DataSize.Unit.for_value off-by-one at exact unit boundaries
+  ([`051f730`](https://github.com/djachenko/justin_utils/commit/051f730e969643beb539e7c9f87497794658a629))
+
+- Remove now-empty source folder after renumber single-part flatten
+  ([`04ffb38`](https://github.com/djachenko/justin_utils/commit/04ffb38514a55b1db8bf1ec1f71c93abc601d8b0))
+
+### Code Style
+
+- Add type hints to _run() in test_subfolder.py
+  ([`9710541`](https://github.com/djachenko/justin_utils/commit/97105418b511bfce410e14f31db77e39c4cfd3b2))
+
+- Blank line after first statement in _RecordingAction.__init__
+  ([`27a4a5d`](https://github.com/djachenko/justin_utils/commit/27a4a5d645e522d2dba5f75200faf7d79b31cd6e))
+
+- Type the recursive file-tree structure instead of bare dict
+  ([`54f2d83`](https://github.com/djachenko/justin_utils/commit/54f2d83b0d9d9f5785c5d957d53b645b1ed2035f))
+
+- Unify exception-test naming to _raises suffix
+  ([`39f0553`](https://github.com/djachenko/justin_utils/commit/39f055376574c436135e531dde26127a85a5a275))
+
+- Use collections.abc.Iterable and lowercase list[] in test_cli.py
+  ([`1a83dbe`](https://github.com/djachenko/justin_utils/commit/1a83dbed078ee8ead8d93735cfb7cb5fc4bea0e1))
+
+### Testing
+
+- Add coverage for subfolder.py, fix mypy typing in test_cli.py
+  ([`0c59307`](https://github.com/djachenko/justin_utils/commit/0c5930766742d08bccf3f7332f7a309ad1af7f56))
+
+- Assert correct behavior for unit boundaries and renumber cleanup (red)
+  ([`a6d4d14`](https://github.com/djachenko/justin_utils/commit/a6d4d14c95f9119023a67da0ac44ab957d3b8cfa))
+
+- Cover case-insensitive extension matching in parse_sources
+  ([`2ec5538`](https://github.com/djachenko/justin_utils/commit/2ec55380dd862f8e10f07bc3f9076568fd2f47d5))
+
+- Deduplicate repeated string literals into single source of truth
+  ([`2de5092`](https://github.com/djachenko/justin_utils/commit/2de5092688b1343ef1131061b1dfea84617a6921))
+
+- Fix DataSpeed.formatted boundary test missed in previous audit
+  ([`271cbd1`](https://github.com/djachenko/justin_utils/commit/271cbd1b8517e3b938903d00d2aaa2cdb0bdc11e))
+
+- Fold case-insensitivity into existing parse_sources parametrize instead of new tests
+  ([`d2d5eef`](https://github.com/djachenko/justin_utils/commit/d2d5eef388b36cb5aaabf0e877d5253f5cbfacf2))
+
+- Fold duplicate-shaped tests into parametrize across the suite
+  ([`fb7fcf6`](https://github.com/djachenko/justin_utils/commit/fb7fcf6f3405e9184655909d3d1e52d6bb528bed))
+
+- Refactor test_parts.py to class+parametrize style
+  ([`a94bde9`](https://github.com/djachenko/justin_utils/commit/a94bde9543ffcd34ad916a3043e646939ac5cd17))
+
+- Use cross-product parametrize for extension-case combinations
+  ([`bf6139d`](https://github.com/djachenko/justin_utils/commit/bf6139d5680712d61eac1b3042e47c46a53b892e))
+
+
 ## v0.2.0 (2026-06-30)
 
 ### Bug Fixes
