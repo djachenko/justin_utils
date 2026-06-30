@@ -1,7 +1,8 @@
 import glob
 import random
 import string
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from math import log10
 from pathlib import Path
@@ -53,7 +54,8 @@ def get_parts(path: Path) -> list[Part]:
     return struct_parts
 
 
-def dump_in_temp(root: Path, parts: list[Part]) -> list[Part]:
+@contextmanager
+def dump_in_temp(root: Path, parts: list[Part]) -> Iterator[list[Part]]:
     while True:
         tmp_folder_name = "".join(random.choices(string.digits + string.ascii_letters, k=10))
 
@@ -73,7 +75,10 @@ def dump_in_temp(root: Path, parts: list[Part]) -> list[Part]:
 
         tmp_parts.append(Part.from_path(tmp_path))
 
-    return tmp_parts
+    try:
+        yield tmp_parts
+    finally:
+        tmp_folder_path.rmdir()
 
 
 def to_padded_string(number: int, length: int, padding: str) -> str:
@@ -155,19 +160,18 @@ def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.
 
         parts.sort(key=lambda x: x.index)
 
-        sorted_parts = dump_in_temp(root_path, parts)
-
         max_index_length = index_length(parts_count)
 
         if width is not None:
             max_index_length = max(max_index_length, width)
 
-        for index, part in enumerate(sorted_parts, start=INDEX_START):
-            new_name = new_part_name(part, index, max_index_length)
+        with dump_in_temp(root_path, parts) as sorted_parts:
+            for index, part in enumerate(sorted_parts, start=INDEX_START):
+                new_name = new_part_name(part, index, max_index_length)
 
-            new_path = root_path / new_name
+                new_path = root_path / new_name
 
-            part.path.rename(new_path)
+                part.path.rename(new_path)
 
     for_each_root(root, perform_for_root)
 
@@ -188,16 +192,15 @@ def offset(offset: int, root: list[str] = typer.Argument(["."]), width: int | No
         if width is not None:
             max_index_length = max(max_index_length, width)
 
-        shifted_parts = dump_in_temp(root_path, parts)
+        with dump_in_temp(root_path, parts) as shifted_parts:
+            for part in reversed(shifted_parts):
+                new_index = part.index + offset
 
-        for part in reversed(shifted_parts):
-            new_index = part.index + offset
+                new_name = new_part_name(part, new_index, max_index_length)
 
-            new_name = new_part_name(part, new_index, max_index_length)
+                new_path = root_path / new_name
 
-            new_path = root_path / new_name
-
-            part.path.rename(new_path)
+                part.path.rename(new_path)
 
     for_each_root(root, perform_for_root)
 
