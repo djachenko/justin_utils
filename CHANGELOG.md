@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.2.0 (2026-06-30)
+
+### Bug Fixes
+
+- Clean up leftover temp folder in dump_in_temp
+  ([`4565292`](https://github.com/djachenko/justin_utils/commit/4565292cebbe4a227d464031fabeb22b6b8bd5cc))
+
+### Features
+
+- Migrate parts CLI from argparse to Typer
+  ([`2a5cf62`](https://github.com/djachenko/justin_utils/commit/2a5cf626f902f38274f077fa8048ba54210cb8b5))
+
+### Testing
+
+- Add tests for parts.py Typer CLI
+  ([`cf850f8`](https://github.com/djachenko/justin_utils/commit/cf850f8be5c41bca85ec564423df89d0405b8e9c))
+
+
 ## v0.1.2 (2026-06-30)
 
 ### Bug Fixes
