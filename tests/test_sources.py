@@ -96,12 +96,8 @@ class TestExternalMetadataSource:
 
 
 class TestParseSources:
-    @pytest.mark.parametrize("raw_extension, metadata_extension", [
-        (".nef", ".xmp"),
-        (".NEF", ".XMP"),
-        (".Nef", ".Xmp"),
-        (".nef", ".XMP"),
-    ])
+    @pytest.mark.parametrize("raw_extension", [".nef", ".NEF", ".Nef"])
+    @pytest.mark.parametrize("metadata_extension", [".xmp", ".XMP", ".Xmp"])
     def test_pairs_raw_with_matching_metadata(self, temp_dir, raw_extension, metadata_extension):
         files = [_file(temp_dir, f"a{raw_extension}"), _file(temp_dir, f"a{metadata_extension}")]
 
