@@ -32,7 +32,7 @@ class DataSize:
         @staticmethod
         def for_value(value: int) -> 'DataSize.Unit':
             for unit in DataSize.Unit.sorted_units():
-                if value > unit.size:
+                if value >= unit.size:
                     return unit
 
             return DataSize.Unit.BYTE

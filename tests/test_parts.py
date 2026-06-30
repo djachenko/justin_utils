@@ -9,178 +9,167 @@ from justin_utils.parts import Part, app, index_length, make, new_part_name, off
 runner = CliRunner()
 
 
-# --- helper functions ---
+class TestPaddedString:
+    @pytest.mark.parametrize("number, length, expected", [
+        (3, 3, "003"),
+        (123, 2, "123"),
+        (1, 1, "1"),
+        (100, 3, "100"),
+    ])
+    def test_to_padded_string(self, number, length, expected):
+        assert to_padded_string(number, length, "0") == expected
 
-def test_to_padded_string_pads_with_zeros():
-    assert to_padded_string(3, 3, "0") == "003"
 
+class TestIndexLength:
+    @pytest.mark.parametrize("index, expected", [
+        (0, 1),
+        (9, 1),
+        (10, 2),
+        (100, 3),
+    ])
+    def test_index_length(self, index, expected):
+        assert index_length(index) == expected
 
-def test_to_padded_string_no_padding_needed():
-    assert to_padded_string(123, 2, "0") == "123"
 
+class TestPartIsPart:
+    @pytest.mark.parametrize("name, expected", [
+        ("3.name", True),
+        ("name", False),
+    ])
+    def test_is_part(self, name, expected):
+        assert Part.is_part(Path(name)) == expected
 
-def test_index_length_zero():
-    assert index_length(0) == 1
 
+class TestPartFromPath:
+    @pytest.mark.parametrize("name, expected_index, expected_name", [
+        ("3.intro", 3, "intro"),
+        ("3", 3, None),
+    ])
+    def test_from_path(self, name, expected_index, expected_name):
+        part = Part.from_path(Path(name))
 
-def test_index_length_single_digit():
-    assert index_length(9) == 1
+        assert part.index == expected_index
+        assert part.name == expected_name
 
 
-def test_index_length_multi_digit():
-    assert index_length(100) == 3
+class TestNewPartName:
+    @pytest.mark.parametrize("name, expected", [
+        ("intro", "02.intro"),
+        (None, "02"),
+    ])
+    def test_new_part_name(self, name, expected):
+        part = Part(index=1, name=name, path=Path(f"1.{name}" if name else "1"))
 
+        assert new_part_name(part, 2, 2) == expected
 
-def test_part_is_part_true():
-    assert Part.is_part(Path("3.name"))
 
+class TestMake:
+    @pytest.mark.parametrize("pre_existing", [None, "2"])
+    def test_creates_numbered_folders(self, temp_dir, pre_existing):
+        if pre_existing:
+            (temp_dir / pre_existing).mkdir()
 
-def test_part_is_part_false():
-    assert not Part.is_part(Path("name"))
+        make(3, root=[str(temp_dir)])
 
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["1", "2", "3"]
 
-def test_part_from_path_with_name():
-    part = Part.from_path(Path("3.intro"))
-    assert part.index == 3
-    assert part.name == "intro"
+    def test_default_root_uses_cwd(self, temp_dir):
+        with cd(temp_dir):
+            make(2, root=["."])
 
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["1", "2"]
 
-def test_part_from_path_without_name():
-    part = Part.from_path(Path("3"))
-    assert part.index == 3
-    assert part.name is None
+    def test_multiple_roots(self, temp_dir):
+        root_a = temp_dir / "a"
+        root_b = temp_dir / "b"
+        root_a.mkdir()
+        root_b.mkdir()
 
+        make(2, root=[str(root_a), str(root_b)])
 
-def test_new_part_name_with_name():
-    part = Part(index=1, name="intro", path=Path("1.intro"))
-    assert new_part_name(part, 2, 2) == "02.intro"
+        assert sorted(p.name for p in root_a.iterdir()) == ["1", "2"]
+        assert sorted(p.name for p in root_b.iterdir()) == ["1", "2"]
 
 
-def test_new_part_name_without_name():
-    part = Part(index=1, name=None, path=Path("1"))
-    assert new_part_name(part, 2, 2) == "02"
+class TestRenumber:
+    def test_resequences_with_gaps(self, temp_dir):
+        first_name, second_name = "intro", "outro"
 
+        (temp_dir / f"1.{first_name}").mkdir()
+        (temp_dir / f"5.{second_name}").mkdir()
 
-# --- make: direct calls ---
+        renumber(root=[str(temp_dir)], width=None)
 
-def test_make_creates_numbered_folders(tmp_path):
-    make(3, root=[str(tmp_path)])
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1", "2", "3"]
+        assert sorted(p.name for p in temp_dir.iterdir()) == [f"1.{first_name}", f"2.{second_name}"]
 
+    def test_width_option(self, temp_dir):
+        (temp_dir / "1").mkdir()
+        (temp_dir / "2").mkdir()
 
-def test_make_skips_existing_indices(tmp_path):
-    (tmp_path / "2").mkdir()
-    make(3, root=[str(tmp_path)])
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1", "2", "3"]
+        renumber(root=[str(temp_dir)], width=3)
 
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["001", "002"]
 
-def test_make_default_root_uses_cwd(tmp_path):
-    with cd(tmp_path):
-        make(2, root=["."])
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1", "2"]
+    def test_single_part_flattens(self, temp_dir):
+        only_part = temp_dir / "1.only"
+        only_part.mkdir()
+        (only_part / "file.txt").write_text("hi")
 
+        renumber(root=[str(temp_dir)], width=None)
 
-def test_make_multiple_roots(tmp_path):
-    root_a = tmp_path / "a"
-    root_b = tmp_path / "b"
-    root_a.mkdir()
-    root_b.mkdir()
+        assert (temp_dir / "file.txt").read_text() == "hi"
+        assert not only_part.exists()
 
-    make(2, root=[str(root_a), str(root_b)])
 
-    assert sorted(p.name for p in root_a.iterdir()) == ["1", "2"]
-    assert sorted(p.name for p in root_b.iterdir()) == ["1", "2"]
+class TestOffset:
+    def test_shifts_indices(self, temp_dir):
+        (temp_dir / "1").mkdir()
+        (temp_dir / "2").mkdir()
 
+        offset(5, root=[str(temp_dir)], width=None)
 
-# --- renumber: direct calls ---
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["6", "7"]
 
-def test_renumber_resequences_with_gaps(tmp_path):
-    (tmp_path / "1.intro").mkdir()
-    (tmp_path / "5.outro").mkdir()
+    def test_width_option(self, temp_dir):
+        (temp_dir / "1").mkdir()
 
-    renumber(root=[str(tmp_path)], width=None)
+        offset(0, root=[str(temp_dir)], width=3)
 
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1.intro", "2.outro"]
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["001"]
 
+    def test_negative_below_zero_raises(self, temp_dir):
+        (temp_dir / "1").mkdir()
 
-def test_renumber_width_option(tmp_path):
-    (tmp_path / "1").mkdir()
-    (tmp_path / "2").mkdir()
+        with pytest.raises(AssertionError):
+            offset(-2, root=[str(temp_dir)], width=None)
 
-    renumber(root=[str(tmp_path)], width=3)
+    def test_no_parts_is_noop(self, temp_dir):
+        offset(5, root=[str(temp_dir)], width=None)
 
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["001", "002"]
+        assert list(temp_dir.iterdir()) == []
 
 
-def test_renumber_single_part_flattens(tmp_path):
-    only_part = tmp_path / "1.only"
-    only_part.mkdir()
-    (only_part / "file.txt").write_text("hi")
+class TestCli:
+    def test_make(self, temp_dir):
+        result = runner.invoke(app, ["make", "3", str(temp_dir)])
 
-    renumber(root=[str(tmp_path)], width=None)
+        assert result.exit_code == 0
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["1", "2", "3"]
 
-    assert (tmp_path / "file.txt").read_text() == "hi"
-    # known bug: the now-empty original folder is left behind, see backlog
-    assert only_part.exists()
-    assert list(only_part.iterdir()) == []
+    def test_offset_with_width(self, temp_dir):
+        (temp_dir / "1").mkdir()
 
+        result = runner.invoke(app, ["offset", "0", str(temp_dir), "-w", "3"])
 
-# --- offset: direct calls ---
+        assert result.exit_code == 0
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["001"]
 
-def test_offset_shifts_indices(tmp_path):
-    (tmp_path / "1").mkdir()
-    (tmp_path / "2").mkdir()
+    def test_renumber_default_root(self, temp_dir):
+        (temp_dir / "1").mkdir()
+        (temp_dir / "5").mkdir()
 
-    offset(5, root=[str(tmp_path)], width=None)
+        with cd(temp_dir):
+            result = runner.invoke(app, ["renumber"])
 
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["6", "7"]
-
-
-def test_offset_width_option(tmp_path):
-    (tmp_path / "1").mkdir()
-
-    offset(0, root=[str(tmp_path)], width=3)
-
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["001"]
-
-
-def test_offset_negative_below_zero_raises(tmp_path):
-    (tmp_path / "1").mkdir()
-
-    with pytest.raises(AssertionError):
-        offset(-2, root=[str(tmp_path)], width=None)
-
-
-def test_offset_no_parts_is_noop(tmp_path):
-    offset(5, root=[str(tmp_path)], width=None)
-
-    assert list(tmp_path.iterdir()) == []
-
-
-# --- CLI-level tests ---
-
-def test_cli_make(tmp_path):
-    result = runner.invoke(app, ["make", "3", str(tmp_path)])
-
-    assert result.exit_code == 0
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1", "2", "3"]
-
-
-def test_cli_offset_with_width(tmp_path):
-    (tmp_path / "1").mkdir()
-
-    result = runner.invoke(app, ["offset", "0", str(tmp_path), "-w", "3"])
-
-    assert result.exit_code == 0
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["001"]
-
-
-def test_cli_renumber_default_root(tmp_path):
-    (tmp_path / "1").mkdir()
-    (tmp_path / "5").mkdir()
-
-    with cd(tmp_path):
-        result = runner.invoke(app, ["renumber"])
-
-    assert result.exit_code == 0
-    assert sorted(p.name for p in tmp_path.iterdir()) == ["1", "2"]
+        assert result.exit_code == 0
+        assert sorted(p.name for p in temp_dir.iterdir()) == ["1", "2"]
