@@ -9,6 +9,7 @@ from justin_utils.cli import Action, App, Command, Parameter
 class _RecordingAction(Action):
     def __init__(self, parameters: Iterable[Parameter] = ()) -> None:
         self.__parameters = list(parameters)
+
         self.calls: list[tuple[Namespace, object]] = []
 
     @property
