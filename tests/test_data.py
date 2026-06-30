@@ -102,7 +102,7 @@ class TestDataSpeed:
     def test_formatted_computes_rate(self):
         speed = DataSpeed(DataSize(2048), timedelta(seconds=2))
 
-        assert speed.formatted() == "1024.00 B/s"
+        assert speed.formatted() == "1.00 KB/s"
 
     def test_str_uses_formatted(self):
         speed = DataSpeed(DataSize(2048), timedelta(seconds=2))
