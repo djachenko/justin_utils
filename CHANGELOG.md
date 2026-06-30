@@ -2,6 +2,33 @@
 
 <!-- version list -->
 
+## v0.1.2 (2026-06-30)
+
+### Bug Fixes
+
+- Add path setter on FolderBased and drop unused pytest imports
+  ([`983609c`](https://github.com/djachenko/justin_utils/commit/983609cda8deff699e9300003f41359835a26ac2))
+
+- Folder.merge_into path update and __get_by_path single-component lookup
+  ([`8ea2d62`](https://github.com/djachenko/justin_utils/commit/8ea2d62127c728e945071d657b9a5ceea68d09a5))
+
+- Support Linux in __get_mount
+  ([`e9ad807`](https://github.com/djachenko/justin_utils/commit/e9ad807f3b6b2a09742b32c3bf4a819bbcc7e2e3))
+
+### Chores
+
+- Add _worktrees/ to gitignore
+  ([`8abfe6e`](https://github.com/djachenko/justin_utils/commit/8abfe6eeed64e90c16c7df042a51a46f8d45a5a5))
+
+- Mark FolderBased as deprecated
+  ([`6ddb233`](https://github.com/djachenko/justin_utils/commit/6ddb2332e9564eb7dd7a1aadf6aafc727138c871))
+
+### Testing
+
+- Add pytest suite for backlog bugs
+  ([`3255843`](https://github.com/djachenko/justin_utils/commit/325584380b18522e9c02b4bd72a9620f2781d2eb))
+
+
 ## v0.1.1 (2026-06-27)
 
 ### Bug Fixes
