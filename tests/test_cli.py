@@ -1,5 +1,5 @@
 from argparse import Namespace
-from typing import Iterable, List
+from collections.abc import Iterable
 
 import pytest
 
@@ -13,7 +13,7 @@ class _RecordingAction(Action):
         self.calls: list[tuple[Namespace, object]] = []
 
     @property
-    def parameters(self) -> List[Parameter]:
+    def parameters(self) -> list[Parameter]:
         return self.__parameters
 
     def perform(self, args: Namespace, context: object) -> None:
