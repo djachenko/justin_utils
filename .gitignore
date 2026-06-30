@@ -123,6 +123,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Worktrees
+_worktrees/
+
 # Session memory
 memory/
 
