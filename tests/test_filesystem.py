@@ -4,11 +4,13 @@ import pytest
 
 from justin_utils.filesystem import Folder
 
+FileTree = dict[str, "FileTree | str | None"]
 
-def _nested(names: list[str], leaf) -> dict:
-    structure = leaf
 
-    for name in reversed(names):
+def _nested(names: list[str], leaf: FileTree | str) -> FileTree:
+    structure: FileTree = {names[-1]: leaf}
+
+    for name in reversed(names[:-1]):
         structure = {name: structure}
 
     return structure

@@ -1,6 +1,9 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+
+FileTree = dict[str, "FileTree | str | None"]
 
 
 @pytest.fixture
@@ -9,8 +12,8 @@ def temp_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def create_files():
-    def _create(root: Path, structure: dict) -> None:
+def create_files() -> Callable[[Path, FileTree], None]:
+    def _create(root: Path, structure: FileTree) -> None:
         for key, value in structure.items():
             new_path = root / key
 
