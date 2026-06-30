@@ -1,7 +1,6 @@
 from datetime import date
 from unittest.mock import patch
 
-import pytest
 
 from justin_utils.util import parse_date
 

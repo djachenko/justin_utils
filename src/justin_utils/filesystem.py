@@ -580,6 +580,10 @@ class FolderBased(PathBased):
     def path(self) -> Path:
         return self.folder.path
 
+    @path.setter
+    def path(self, value: Path) -> None:
+        self.folder.path = value
+
     def move(self, path: Path) -> None:
         self.folder.move(path)
 

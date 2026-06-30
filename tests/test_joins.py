@@ -1,4 +1,3 @@
-import pytest
 
 from justin_utils.joins import inner, left, right
 
