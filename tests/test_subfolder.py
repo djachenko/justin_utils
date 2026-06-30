@@ -8,7 +8,7 @@ from justin_utils.cd import cd
 SUBFOLDER_NAME = "archive"
 
 
-def _run(monkeypatch, argv):
+def _run(monkeypatch: pytest.MonkeyPatch, argv: list[str]) -> None:
     monkeypatch.setattr(sys, "argv", ["sf", *argv])
 
     subfolder.__run()
