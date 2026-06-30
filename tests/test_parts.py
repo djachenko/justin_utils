@@ -119,9 +119,7 @@ class TestRenumber:
         renumber(root=[str(temp_dir)], width=None)
 
         assert (temp_dir / "file.txt").read_text() == "hi"
-        # known bug: the now-empty original folder is left behind, see backlog
-        assert only_part.exists()
-        assert list(only_part.iterdir()) == []
+        assert not only_part.exists()
 
 
 class TestOffset:

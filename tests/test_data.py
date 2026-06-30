@@ -9,10 +9,11 @@ class TestDataSizeUnitForValue:
     @pytest.mark.parametrize("value, expected_unit", [
         (0, DataSize.Unit.BYTE),
         (1, DataSize.Unit.BYTE),
-        (1024, DataSize.Unit.BYTE),  # boundary: strict '>' means exactly 1KB still reads as bytes
+        (1024, DataSize.Unit.KILOBYTE),
         (1025, DataSize.Unit.KILOBYTE),
-        (2 ** 20, DataSize.Unit.KILOBYTE),
+        (2 ** 20, DataSize.Unit.MEGABYTE),
         (2 ** 20 + 1, DataSize.Unit.MEGABYTE),
+        (2 ** 30, DataSize.Unit.GIGABYTE),
         (2 ** 30 + 1, DataSize.Unit.GIGABYTE),
     ])
     def test_for_value(self, value, expected_unit):
