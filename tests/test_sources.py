@@ -96,8 +96,14 @@ class TestExternalMetadataSource:
 
 
 class TestParseSources:
-    def test_pairs_raw_with_matching_metadata(self, temp_dir):
-        files = [_file(temp_dir, "a.nef"), _file(temp_dir, "a.xmp")]
+    @pytest.mark.parametrize("raw_extension, metadata_extension", [
+        (".nef", ".xmp"),
+        (".NEF", ".XMP"),
+        (".Nef", ".Xmp"),
+        (".nef", ".XMP"),
+    ])
+    def test_pairs_raw_with_matching_metadata(self, temp_dir, raw_extension, metadata_extension):
+        files = [_file(temp_dir, f"a{raw_extension}"), _file(temp_dir, f"a{metadata_extension}")]
 
         sources = parse_sources(files)
 
@@ -115,8 +121,9 @@ class TestParseSources:
         assert isinstance(sources[0], ExternalMetadataSource)
         assert sources[0].metadata is None
 
-    def test_jpg_becomes_internal_source(self, temp_dir):
-        files = [_file(temp_dir, "a.jpg")]
+    @pytest.mark.parametrize("extension", [".jpg", ".JPG", ".Jpg"])
+    def test_jpg_becomes_internal_source(self, temp_dir, extension):
+        files = [_file(temp_dir, f"a{extension}")]
 
         sources = parse_sources(files)
 
@@ -135,27 +142,3 @@ class TestParseSources:
         assert len(sources) == 2
         names = {source.name for source in sources}
         assert names == {"a", "b"}
-
-    @pytest.mark.parametrize("raw_extension, metadata_extension", [
-        (".nef", ".xmp"),
-        (".NEF", ".XMP"),
-        (".Nef", ".Xmp"),
-        (".nef", ".XMP"),
-    ])
-    def test_raw_and_metadata_extensions_are_case_insensitive(self, temp_dir, raw_extension, metadata_extension):
-        files = [_file(temp_dir, f"a{raw_extension}"), _file(temp_dir, f"a{metadata_extension}")]
-
-        sources = parse_sources(files)
-
-        assert len(sources) == 1
-        assert isinstance(sources[0], ExternalMetadataSource)
-        assert sources[0].metadata is not None
-
-    @pytest.mark.parametrize("extension", [".jpg", ".JPG", ".Jpg"])
-    def test_internal_extension_is_case_insensitive(self, temp_dir, extension):
-        files = [_file(temp_dir, f"a{extension}")]
-
-        sources = parse_sources(files)
-
-        assert len(sources) == 1
-        assert isinstance(sources[0], InternalMetadataSource)
