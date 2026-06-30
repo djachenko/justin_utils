@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import platform
 import shutil
+import sys
 import webbrowser
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
 from typing import List, Dict, Callable, Self, Iterable
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time
@@ -78,7 +84,7 @@ def __get_mount(path: Path) -> Path:
     system_name = platform.system()
     path = path.resolve().absolute()
 
-    if system_name == "Darwin":
+    if system_name in ("Darwin", "Linux"):
         return __get_unix_mount(path)
     elif system_name == "Windows":
         return __get_windows_mount(path)
@@ -267,6 +273,10 @@ class PathBased(Movable):
     def path(self) -> Path:
         return self.__path
 
+    @path.setter
+    def path(self, value: Path) -> None:
+        self.__path = value
+
     def move(self, path: Path) -> None:
         # files and folders are copied differently. Also having same drive matters
         move(self.path, path)
@@ -423,6 +433,9 @@ class Folder(PathBased):
         if subfolder is None:
             return None
 
+        if not rest:
+            return subfolder
+
         return subfolder[Path(*rest)]
 
     def flatten(self) -> List[File]:
@@ -519,7 +532,7 @@ class Folder(PathBased):
         for file in self.files:
             file.move(new_path)
 
-        self.__path = new_path
+        self.path = new_path
 
     def __str__(self) -> str:
         return f"FolderTree: {self.path}"
@@ -555,6 +568,7 @@ class Folder(PathBased):
         return cls(path)
 
 
+@deprecated("FolderBased is unused internally; confirm it's still needed before relying on it")
 class FolderBased(PathBased):
     def __init__(self, folder: Folder) -> None:
         super().__init__(folder.path)
@@ -572,6 +586,10 @@ class FolderBased(PathBased):
     @property
     def path(self) -> Path:
         return self.folder.path
+
+    @path.setter
+    def path(self, value: Path) -> None:
+        self.folder.path = value
 
     def move(self, path: Path) -> None:
         self.folder.move(path)

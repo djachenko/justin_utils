@@ -40,6 +40,7 @@ other      = [
 ]
 filesystem = [
     "justin_utils[other]",
+    "typing_extensions; python_version < '3.13'",
 ]
 cli        = [
     "justin_utils[util]",
