@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import platform
 import shutil
+import sys
 import webbrowser
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
 from typing import List, Dict, Callable, Self, Iterable
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time
@@ -562,6 +568,7 @@ class Folder(PathBased):
         return cls(path)
 
 
+@deprecated("FolderBased is unused internally; confirm it's still needed before relying on it")
 class FolderBased(PathBased):
     def __init__(self, folder: Folder) -> None:
         super().__init__(folder.path)
