@@ -267,6 +267,10 @@ class PathBased(Movable):
     def path(self) -> Path:
         return self.__path
 
+    @path.setter
+    def path(self, value: Path) -> None:
+        self.__path = value
+
     def move(self, path: Path) -> None:
         # files and folders are copied differently. Also having same drive matters
         move(self.path, path)
@@ -423,6 +427,9 @@ class Folder(PathBased):
         if subfolder is None:
             return None
 
+        if not rest:
+            return subfolder
+
         return subfolder[Path(*rest)]
 
     def flatten(self) -> List[File]:
@@ -519,7 +526,7 @@ class Folder(PathBased):
         for file in self.files:
             file.move(new_path)
 
-        self.__path = new_path
+        self.path = new_path
 
     def __str__(self) -> str:
         return f"FolderTree: {self.path}"
