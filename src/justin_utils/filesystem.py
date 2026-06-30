@@ -78,7 +78,7 @@ def __get_mount(path: Path) -> Path:
     system_name = platform.system()
     path = path.resolve().absolute()
 
-    if system_name == "Darwin":
+    if system_name in ("Darwin", "Linux"):
         return __get_unix_mount(path)
     elif system_name == "Windows":
         return __get_windows_mount(path)
