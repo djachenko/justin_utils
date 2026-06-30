@@ -1,102 +1,57 @@
 from pathlib import Path
 
+import pytest
 
 from justin_utils.filesystem import Folder
 
 
-def make_folder(tmp_path: Path, structure: dict) -> Path:
-    """Recursively create a directory structure. Values are file contents (str) or nested dicts."""
-    for name, content in structure.items():
-        child = tmp_path / name
-        if isinstance(content, dict):
-            child.mkdir()
-            make_folder(child, content)
-        else:
-            child.write_text(content)
-    return tmp_path
+class TestGetByPath:
+    @pytest.mark.parametrize("structure, lookup, expected_name", [
+        ({"a": {"file.txt": "x"}}, "a", "a"),
+        ({"a": {"b": {"file.txt": "x"}}}, "a/b", "b"),
+        ({"a": {"b": {"c": {"file.txt": "x"}}}}, "a/b/c", "c"),
+    ])
+    def test_existing_path_returns_folder(self, temp_dir, create_files, structure, lookup, expected_name):
+        create_files(temp_dir, structure)
+        folder = Folder(temp_dir)
+
+        result = folder[Path(lookup)]
+
+        assert result is not None
+        assert result.name == expected_name
+
+    @pytest.mark.parametrize("lookup", [
+        "a/nonexistent",
+        "z",
+    ])
+    def test_missing_path_returns_none(self, temp_dir, create_files, lookup):
+        create_files(temp_dir, {"a": {"file.txt": "x"}})
+        folder = Folder(temp_dir)
+
+        result = folder[Path(lookup)]
+
+        assert result is None
 
 
-# region Folder.__get_by_path
+class TestMergeInto:
+    @pytest.mark.parametrize("structure, expected_path", [
+        ({"file.txt": "content"}, ("file.txt",)),
+        ({"sub": {"file.txt": "content"}}, ("sub", "file.txt")),
+    ])
+    def test_merge_into_moves_contents(self, temp_dir, create_files, structure, expected_path):
+        create_files(temp_dir, {"source": structure, "target": {}})
+        source = Folder(temp_dir / "source")
+        target = temp_dir / "target"
 
-def test_get_by_path_single_component(tmp_path):
-    make_folder(tmp_path, {"a": {"file.txt": "x"}})
-    folder = Folder(tmp_path)
-    result = folder[Path("a")]
-    assert result is not None
-    assert result.name == "a"
+        source.merge_into(target)
 
+        assert target.joinpath(*expected_path).exists()
 
-def test_get_by_path_two_levels(tmp_path):
-    make_folder(tmp_path, {"a": {"b": {"file.txt": "x"}}})
-    folder = Folder(tmp_path)
-    result = folder[Path("a/b")]
-    assert result is not None
-    assert result.name == "b"
+    def test_merge_into_updates_path(self, temp_dir, create_files):
+        create_files(temp_dir, {"source": {"file.txt": "content"}, "target": {}})
+        source = Folder(temp_dir / "source")
+        target = temp_dir / "target"
 
+        source.merge_into(target)
 
-def test_get_by_path_three_levels(tmp_path):
-    make_folder(tmp_path, {"a": {"b": {"c": {"file.txt": "x"}}}})
-    folder = Folder(tmp_path)
-    result = folder[Path("a/b/c")]
-    assert result is not None
-    assert result.name == "c"
-
-
-def test_get_by_path_missing_returns_none(tmp_path):
-    make_folder(tmp_path, {"a": {"file.txt": "x"}})
-    folder = Folder(tmp_path)
-    result = folder[Path("a/nonexistent")]
-    assert result is None
-
-
-def test_get_by_path_missing_root_returns_none(tmp_path):
-    make_folder(tmp_path, {"a": {"file.txt": "x"}})
-    folder = Folder(tmp_path)
-    result = folder[Path("z")]
-    assert result is None
-
-
-# endregion
-
-# region Folder.merge_into
-
-def test_merge_into_moves_files(tmp_path):
-    make_folder(tmp_path, {
-        "source": {"file.txt": "content"},
-        "target": {},
-    })
-    source = Folder(tmp_path / "source")
-    target = tmp_path / "target"
-
-    source.merge_into(target)
-
-    assert (target / "file.txt").exists()
-
-
-def test_merge_into_updates_path(tmp_path):
-    make_folder(tmp_path, {
-        "source": {"file.txt": "content"},
-        "target": {},
-    })
-    source = Folder(tmp_path / "source")
-    target = tmp_path / "target"
-
-    source.merge_into(target)
-
-    assert source.path == target
-
-
-def test_merge_into_moves_subfolders(tmp_path):
-    make_folder(tmp_path, {
-        "source": {"sub": {"file.txt": "content"}},
-        "target": {},
-    })
-    source = Folder(tmp_path / "source")
-    target = tmp_path / "target"
-
-    source.merge_into(target)
-
-    assert (target / "sub" / "file.txt").exists()
-
-
-# endregion
+        assert source.path == target
