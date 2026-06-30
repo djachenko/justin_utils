@@ -109,10 +109,10 @@ class TestDataSpeed:
 
         assert str(speed) == speed.formatted()
 
-    def test_invalid_amount_type_asserts(self):
+    @pytest.mark.parametrize("amount, time", [
+        (1024, timedelta(seconds=1)),
+        (DataSize(1024), 1),
+    ])
+    def test_invalid_constructor_args_assert(self, amount, time):
         with pytest.raises(AssertionError):
-            DataSpeed(1024, timedelta(seconds=1))
-
-    def test_invalid_time_type_asserts(self):
-        with pytest.raises(AssertionError):
-            DataSpeed(DataSize(1024), 1)
+            DataSpeed(amount, time)

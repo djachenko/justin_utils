@@ -55,20 +55,21 @@ class TestParameter:
 
 
 class TestCommand:
-    def test_duplicate_parameter_names_assert(self):
+    @pytest.mark.parametrize("allowed_same_parameters, raises", [
+        ((), True),
+        (["root"], False),
+    ])
+    def test_duplicate_parameter_names(self, allowed_same_parameters, raises):
         action1 = _RecordingAction([Parameter(name="root")])
         action2 = _RecordingAction([Parameter(name="root")])
 
-        with pytest.raises(AssertionError):
-            Command("cmd", [action1, action2])
+        if raises:
+            with pytest.raises(AssertionError):
+                Command("cmd", [action1, action2], allowed_same_parameters=allowed_same_parameters)
+        else:
+            command = Command("cmd", [action1, action2], allowed_same_parameters=allowed_same_parameters)
 
-    def test_duplicate_parameter_names_allowed_when_whitelisted(self):
-        action1 = _RecordingAction([Parameter(name="root")])
-        action2 = _RecordingAction([Parameter(name="root")])
-
-        command = Command("cmd", [action1, action2], allowed_same_parameters=["root"])
-
-        assert command.name == "cmd"
+            assert command.name == "cmd"
 
     def test_name_with_spaces_asserts(self):
         with pytest.raises(AssertionError):

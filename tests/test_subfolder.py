@@ -13,27 +13,21 @@ def _run(monkeypatch, argv):
 
 
 class TestRun:
-    def test_moves_default_pattern_matches(self, temp_dir, monkeypatch):
-        (temp_dir / "a.txt").touch()
-        (temp_dir / "b.txt").touch()
-
-        with cd(temp_dir):
-            _run(monkeypatch, ["archive"])
-
-        assert (temp_dir / "archive" / "a.txt").exists()
-        assert (temp_dir / "archive" / "b.txt").exists()
-        assert not (temp_dir / "a.txt").exists()
-
-    def test_moves_only_matching_pattern(self, temp_dir, monkeypatch):
+    @pytest.mark.parametrize("argv_pattern, b_log_moved", [
+        ([], True),  # default pattern "*" matches everything
+        (["*.txt"], False),
+    ])
+    def test_moves_matching_files(self, temp_dir, monkeypatch, argv_pattern, b_log_moved):
         (temp_dir / "a.txt").touch()
         (temp_dir / "b.log").touch()
 
         with cd(temp_dir):
-            _run(monkeypatch, ["archive", "*.txt"])
+            _run(monkeypatch, ["archive", *argv_pattern])
 
         assert (temp_dir / "archive" / "a.txt").exists()
-        assert (temp_dir / "b.log").exists()
-        assert not (temp_dir / "archive" / "b.log").exists()
+        assert not (temp_dir / "a.txt").exists()
+        assert (temp_dir / "archive" / "b.log").exists() == b_log_moved
+        assert (temp_dir / "b.log").exists() == (not b_log_moved)
 
     def test_creates_subfolder_if_missing(self, temp_dir, monkeypatch):
         (temp_dir / "a.txt").touch()

@@ -4,8 +4,9 @@ from justin_utils.pylinq import Sequence
 
 
 class TestConstruction:
-    def test_empty_returns_empty_sequence(self):
-        assert Sequence.empty().to_list() == []
+    @pytest.mark.parametrize("seq", [Sequence(), Sequence.empty()])
+    def test_empty_construction(self, seq):
+        assert seq.to_list() == []
 
     def test_with_sequence(self):
         assert Sequence.with_sequence([1, 2, 3]).to_list() == [1, 2, 3]
@@ -17,9 +18,6 @@ class TestConstruction:
         result = Sequence.with_dict({"a": 1, "b": 2}).to_list()
 
         assert set(result) == {("a", 1), ("b", 2)}
-
-    def test_default_base_is_empty(self):
-        assert Sequence().to_list() == []
 
 
 class TestFilter:
@@ -77,16 +75,16 @@ class TestTakeSkip:
 
 
 class TestNotNull:
-    def test_filters_out_none_by_default(self):
-        result = Sequence.with_sequence([1, None, 2, None]).not_null().to_list()
+    @pytest.mark.parametrize("items, key, expected", [
+        ([1, None, 2, None], None, [1, 2]),
+        ([{"v": 1}, {"v": None}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
+    ])
+    def test_not_null(self, items, key, expected):
+        seq = Sequence.with_sequence(items)
 
-        assert result == [1, 2]
+        result = (seq.not_null(key=key) if key else seq.not_null()).to_list()
 
-    def test_filters_by_key(self):
-        items = [{"v": 1}, {"v": None}, {"v": 2}]
-        result = Sequence.with_sequence(items).not_null(key=lambda x: x["v"]).to_list()
-
-        assert result == [{"v": 1}, {"v": 2}]
+        assert result == expected
 
 
 class TestAppendAdd:
@@ -132,16 +130,16 @@ class TestGroupBy:
 
 
 class TestDistinct:
-    def test_distinct_default_key(self):
-        result = Sequence.with_sequence([1, 2, 2, 3, 1]).distinct().to_list()
+    @pytest.mark.parametrize("items, key, expected", [
+        ([1, 2, 2, 3, 1], None, [1, 2, 3]),
+        ([{"v": 1}, {"v": 1}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
+    ])
+    def test_distinct(self, items, key, expected):
+        seq = Sequence.with_sequence(items)
 
-        assert result == [1, 2, 3]
+        result = (seq.distinct(key=key) if key else seq.distinct()).to_list()
 
-    def test_distinct_with_key(self):
-        items = [{"v": 1}, {"v": 1}, {"v": 2}]
-        result = Sequence.with_sequence(items).distinct(key=lambda x: x["v"]).to_list()
-
-        assert result == [{"v": 1}, {"v": 2}]
+        assert result == expected
 
     @pytest.mark.parametrize("items, expected", [
         ([1, 2, 3], True),
@@ -199,15 +197,16 @@ class TestConversions:
     def test_to_set(self):
         assert Sequence.with_sequence([1, 1, 2]).to_set() == {1, 2}
 
-    def test_to_dict_default(self):
-        result = Sequence.with_sequence([(1, "a"), (2, "b")]).to_dict()
+    @pytest.mark.parametrize("items, generator, expected", [
+        ([(1, "a"), (2, "b")], None, {1: "a", 2: "b"}),
+        ([1, 2], lambda x: (x, x * 2), {1: 2, 2: 4}),
+    ])
+    def test_to_dict(self, items, generator, expected):
+        seq = Sequence.with_sequence(items)
 
-        assert result == {1: "a", 2: "b"}
+        result = seq.to_dict(generator) if generator else seq.to_dict()
 
-    def test_to_dict_with_generator(self):
-        result = Sequence.with_sequence([1, 2]).to_dict(lambda x: (x, x * 2))
-
-        assert result == {1: 2, 2: 4}
+        assert result == expected
 
 
 class TestEach:

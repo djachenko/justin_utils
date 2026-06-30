@@ -64,13 +64,10 @@ class TestNewPartName:
 
 
 class TestMake:
-    def test_creates_numbered_folders(self, temp_dir):
-        make(3, root=[str(temp_dir)])
-
-        assert sorted(p.name for p in temp_dir.iterdir()) == ["1", "2", "3"]
-
-    def test_skips_existing_indices(self, temp_dir):
-        (temp_dir / "2").mkdir()
+    @pytest.mark.parametrize("pre_existing", [None, "2"])
+    def test_creates_numbered_folders(self, temp_dir, pre_existing):
+        if pre_existing:
+            (temp_dir / pre_existing).mkdir()
 
         make(3, root=[str(temp_dir)])
 

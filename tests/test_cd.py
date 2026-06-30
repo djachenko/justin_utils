@@ -34,15 +34,13 @@ class TestCd:
 
         assert Path.cwd() == previous
 
-    def test_missing_path_raises(self, temp_dir):
-        with pytest.raises(AssertionError):
-            with cd(temp_dir / "missing"):
-                pass
+    @pytest.mark.parametrize("create_as_file", [False, True])
+    def test_invalid_path_raises(self, temp_dir, create_as_file):
+        path = temp_dir / "target"
 
-    def test_file_path_raises(self, temp_dir):
-        file_path = temp_dir / "file.txt"
-        file_path.touch()
+        if create_as_file:
+            path.touch()
 
         with pytest.raises(AssertionError):
-            with cd(file_path):
+            with cd(path):
                 pass

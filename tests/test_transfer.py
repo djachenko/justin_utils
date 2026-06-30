@@ -19,7 +19,7 @@ class TestTransferSpeedMeter:
         [1024],
         [512, 1024, 2048, 4096, 8192, 16384],
     ])
-    def test_current_value_after_start_and_feed(self, feeds):
+    def test_values_after_start_and_feed(self, feeds):
         meter = TransferSpeedMeter()
         meter.start()
 
@@ -27,16 +27,4 @@ class TestTransferSpeedMeter:
             meter.feed(size)
 
         assert meter.current_value is not None
-
-    @pytest.mark.parametrize("feeds", [
-        [1024],
-        [512, 1024, 2048, 4096, 8192, 16384],
-    ])
-    def test_average_value_after_start_and_feed(self, feeds):
-        meter = TransferSpeedMeter()
-        meter.start()
-
-        for size in feeds:
-            meter.feed(size)
-
         assert meter.average_value is not None
