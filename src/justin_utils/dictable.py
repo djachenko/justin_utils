@@ -5,8 +5,6 @@ from dataclasses import MISSING, Field, asdict, dataclass, fields
 from types import NoneType, UnionType
 from typing import Any, Self, TypeVar, cast, get_args, get_origin
 
-from frozendict import frozendict
-
 log = logging.getLogger("justin_utils.dictable")
 
 V = TypeVar("V")
@@ -19,7 +17,7 @@ Rules = Mapping[type, Callable[[Json], Any]]
 class Dictable:
     @classmethod
     def rules(cls) -> Rules:
-        return frozendict()
+        return {}
 
     @classmethod
     def from_dict(cls, json_object: Json) -> Self:
@@ -33,7 +31,7 @@ class Dictable:
 @dataclass
 class DictableDataclass(Dictable):
     def as_dict(self) -> Mapping[str, Any]:
-        return frozendict(asdict(self))
+        return asdict(self)
 
 
 def _unwrap_optional(field_type: Any) -> tuple[Any, bool]:

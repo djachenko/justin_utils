@@ -15,7 +15,6 @@ authors = [{ name = "Igor Djachenko" }]
 requires-python = ">=3.11"
 dependencies = [
     "justin_utils[util]",
-    "justin_utils[dictable]",
     "justin_utils[joins]",
     "justin_utils[singleton]",
     "justin_utils[pylinq]",
@@ -33,7 +32,6 @@ sf = "justin_utils.subfolder:__run"
 
 [project.optional-dependencies]
 util       = []
-dictable   = ["frozendict"]
 joins      = []
 singleton  = []
 pylinq     = []
