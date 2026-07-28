@@ -27,6 +27,7 @@ pyvko  ──→ justin_utils (планируется)
 | `transfer.py` | `TransferSpeedMeter`, `TransferTimeEstimator` |
 | `time_formatter.py` | Форматирование времени |
 | `data.py` | `DataSize` |
+| `dictable.py` | `Dictable`, `DictableDataclass`, `fromdict` — десериализация JSON в датаклассы |
 | `exif.py` | EXIF-утилиты |
 | `singleton.py` | Singleton паттерн |
 | `joins.py`, `pylinq.py` | LINQ-подобные операции над коллекциями |
@@ -36,15 +37,13 @@ pyvko  ──→ justin_utils (планируется)
 
 ## Текущее состояние
 
-- Версия `0.0.1` — никогда не апдейтилась с релиза
-- 26 незакоммиченных файлов — давно не синхронизировалось с реальным состоянием
+- Версия `0.2.2`
 - Установка в других проектах: `pip install -e ../justin_utils`
 
 ---
 
 ## Что нужно сделать
 
-- Разобрать 26 dirty-файлов
 - При следующей работе с justin или pyvko — выявить код который стоит сюда перенести
 - Рассмотреть разбивку на отдельные install-extras чтобы не тянуть всё целиком
 
