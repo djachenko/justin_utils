@@ -61,7 +61,7 @@ sources    = [
 ]
 test       = [
     "pytest",
-    "ruff",
+    "ruff >= 0.16, < 0.17",
     "mypy",
 ]
 release    = [
