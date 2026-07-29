@@ -122,7 +122,7 @@ def for_each_root(root_patterns: list[str], perform_for_root: Callable[[Path, li
 
 
 @app.command()
-def make(count: int, root: list[str] = typer.Argument(["."])) -> None:
+def make(count: int, root: list[str] = typer.Argument(["."])) -> None:  # noqa: B008
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         existing_indices = {part.index for part in parts}
 
@@ -146,7 +146,7 @@ def make(count: int, root: list[str] = typer.Argument(["."])) -> None:
 
 
 @app.command()
-def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:
+def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:  # noqa: B008
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         parts_count = len(parts)
 
@@ -179,7 +179,7 @@ def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.
 
 
 @app.command()
-def offset(offset: int, root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:
+def offset(offset: int, root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:  # noqa: B008
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         if not parts:
             return

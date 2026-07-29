@@ -1,11 +1,12 @@
 from abc import abstractmethod
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import List, Iterable
+from typing import ClassVar
 
-from justin_utils import util, joins
+from justin_utils import joins, util
 from justin_utils.exif import Exif, parse_exif
-from justin_utils.filesystem import Movable, File
+from justin_utils.filesystem import File, Movable
 
 
 class Source(Movable):
@@ -49,7 +50,7 @@ class Source(Movable):
         return sum([f.size for f in self.files()])
 
     @abstractmethod
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         pass
 
     def __str__(self) -> str:
@@ -60,7 +61,7 @@ class Source(Movable):
 
 
 class InternalMetadataSource(Source):
-    TYPES = [
+    TYPES: ClassVar[list[str]] = [
         ".jpg",
         ".tif",
         ".dng",
@@ -80,7 +81,7 @@ class InternalMetadataSource(Source):
     def name(self) -> str:
         return self.__file.stem
 
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         return [self.__file]
 
     @cached_property
@@ -89,13 +90,13 @@ class InternalMetadataSource(Source):
 
 
 class ExternalMetadataSource(Source):
-    RAW_TYPES = [
+    RAW_TYPES: ClassVar[list[str]] = [
         ".nef",  # Nikon
         ".raf",  # Fujifilm GFX
         ".arw",  # Sony
     ]
 
-    METADATA_TYPES = [
+    METADATA_TYPES: ClassVar[list[str]] = [
         ".xmp",
     ]
 
@@ -125,7 +126,7 @@ class ExternalMetadataSource(Source):
     def exif(self) -> Exif | None:
         return parse_exif(self.raw.path)
 
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         files = [self.raw]
 
         if self.metadata is not None:
@@ -134,7 +135,7 @@ class ExternalMetadataSource(Source):
         return files
 
 
-def parse_sources(seq: Iterable[File]) -> List[Source]:
+def parse_sources(seq: Iterable[File]) -> list[Source]:
     split = list(util.split_by_predicates(
         seq,
         lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,

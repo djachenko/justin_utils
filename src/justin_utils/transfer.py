@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Tuple
 
 from justin_utils.data import DataSize, DataSpeed
 
@@ -14,10 +13,10 @@ class TransferSpeedMeter:
         self.__total_size: int | None = None
 
         self.__history_start_time: datetime | None = None
-        self.__history: List[Tuple[datetime, int]] = []
+        self.__history: list[tuple[datetime, int]] = []
 
     def start(self) -> None:
-        now = datetime.now()
+        now = datetime.now()  # noqa: DTZ005
 
         self.__global_start_time = now
         self.__total_size = 0
@@ -30,7 +29,7 @@ class TransferSpeedMeter:
 
         assert self.__total_size is not None
 
-        now = datetime.now()
+        now = datetime.now()  # noqa: DTZ005
 
         self.__total_size += size
         self.__global_stop_time = now

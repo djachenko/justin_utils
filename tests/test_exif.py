@@ -3,12 +3,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from justin_utils.exif import PillowExif, NativeExif
-
+from justin_utils.exif import NativeExif, PillowExif
 
 # DateTimeOriginal = 36867, DateTime = 306 (PIL ExifTags)
 _DATE_STR = "2024:03:15 10:30:00"
-_EXPECTED_DT = datetime(2024, 3, 15, 10, 30, 0)
+_EXPECTED_DT = datetime(2024, 3, 15, 10, 30, 0)  # noqa: DTZ001
 
 
 class TestPillowExif:

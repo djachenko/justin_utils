@@ -5,9 +5,10 @@ import shutil
 import sys
 import webbrowser
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
-from typing import List, Dict, Callable, Self, Iterable
+from typing import ClassVar, Self
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
@@ -19,22 +20,22 @@ from justin_utils.time_formatter import format_time
 from justin_utils.transfer import TransferSpeedMeter, TransferTimeEstimator
 
 
-def __subfolders(path: Path) -> List[Path]:
+def __subfolders(path: Path) -> list[Path]:
     if path.exists():
         return [i for i in path.iterdir() if i.is_dir()]
 
     return []
 
 
-def __subfiles(path: Path) -> List[Path]:
+def __subfiles(path: Path) -> list[Path]:
     return [i for i in path.iterdir() if i.is_file()]
 
 
 def __tree_is_empty(path: Path) -> bool:
-    return len(__subfiles(path)) == 0 and all([__tree_is_empty(subfolder) for subfolder in __subfolders(path)])
+    return len(__subfiles(path)) == 0 and all(__tree_is_empty(subfolder) for subfolder in __subfolders(path))
 
 
-def __flatten(path: Path) -> List[Path]:
+def __flatten(path: Path) -> list[Path]:
     files = []
 
     for entry in path.iterdir():
@@ -347,12 +348,12 @@ class File(PathBased):
 
         return o.path == self.path
 
-    def __lt__(self, other: 'File') -> bool:
+    def __lt__(self, other: File) -> bool:
         return self.name < other.name
 
 
 class Folder(PathBased):
-    __FILES_TO_UNLINK = [name.lower() for name in [
+    __FILES_TO_UNLINK: ClassVar[list[str]] = [name.lower() for name in [
         ".DS_store",
         "NC_FLLST.DAT",
     ]]
@@ -361,11 +362,11 @@ class Folder(PathBased):
     def __init__(self, path: Path) -> None:
         super().__init__(path)
 
-        self.__subfolder_mapping: Dict[str, Self] | None = None
-        self.__files: List[File] | None = None
+        self.__subfolder_mapping: dict[str, Self] | None = None
+        self.__files: list[File] | None = None
 
     @property
-    def __subfolders(self) -> Dict[str, Self]:
+    def __subfolders(self) -> dict[str, Self]:
         if self.__subfolder_mapping is None:
             self.refresh()
 
@@ -381,7 +382,7 @@ class Folder(PathBased):
         return self.path.stem
 
     @property
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         if self.__files is None:
             self.refresh()
 
@@ -394,8 +395,8 @@ class Folder(PathBased):
             sum(subfolder.total_size for subfolder in self.subfolders)
 
     @property
-    def subfolders(self) -> List[Self]:
-        return sorted(list(self.__subfolders.values()), key=lambda x: x.name)
+    def subfolders(self) -> list[Self]:
+        return sorted(self.__subfolders.values(), key=lambda x: x.name)
 
     def __contains__(self, key: str) -> bool:
         return key in self.__subfolders
@@ -440,7 +441,7 @@ class Folder(PathBased):
 
         return subfolder[Path(*rest)]
 
-    def flatten(self) -> List[File]:
+    def flatten(self) -> list[File]:
         result = self.files.copy()
 
         for subtree in self.subfolders:
@@ -487,7 +488,7 @@ class Folder(PathBased):
                 else:
                     try:
                         child_tree.remove()
-                    except Exception:
+                    except Exception:  # noqa: BLE001
                         print(f"Failed to remove empty tree: \"{child_tree}\"")
 
                         self.__subfolders[child.name] = child_tree
@@ -503,7 +504,7 @@ class Folder(PathBased):
             else:
                 print("Path is neither file nor dir")
 
-                exit(1)
+                sys.exit(1)
 
         self.__files.sort(key=lambda x: x.name)
 
@@ -597,8 +598,8 @@ class FolderBased(PathBased):
         self.folder.move(path)
 
 
-def parse_paths(paths: List[Path]) -> List[PathBased]:
-    result: List[PathBased] = []
+def parse_paths(paths: list[Path]) -> list[PathBased]:
+    result: list[PathBased] = []
 
     for path in paths:
         if path.is_file():
