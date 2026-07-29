@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-07-29)
+
+### Chores
+
+- Ignore CLAUDE.local.md
+  ([`c24bde6`](https://github.com/djachenko/justin_utils/commit/c24bde6b075f3094e703a006bde09d26dc2ed3d7))
+
+### Documentation
+
+- Remove stale status and backlog from CLAUDE.md
+  ([`ce127dd`](https://github.com/djachenko/justin_utils/commit/ce127dd96b96c900182605d1ba01e33d8bcbad40))
+
+- Reorder modules section alphabetically, promote CLI tools
+  ([`de7f0fc`](https://github.com/djachenko/justin_utils/commit/de7f0fcd68bf7968caed2d21c5c03d6a04b62e64))
+
+### Features
+
+- Add dictable module
+  ([`ae0ee7c`](https://github.com/djachenko/justin_utils/commit/ae0ee7c0ef960e819d92f5722afc7ab7de1ea00c))
+
+### Refactoring
+
+- Remove frozendict dependency from dictable
+  ([`7d8fb50`](https://github.com/djachenko/justin_utils/commit/7d8fb50bbc40892a2e707918f37806af0f2821f5))
+
+
 ## v0.2.3 (2026-07-29)
 
 ### Bug Fixes
