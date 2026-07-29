@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.2.3 (2026-07-29)
+
+### Bug Fixes
+
+- Add return type annotations for mypy --strict compliance
+  ([`88af0ca`](https://github.com/djachenko/justin_utils/commit/88af0ca2b38363ca06e65797d5ae90926b7cbe66))
+
+- Resolve ruff 0.16 violations (RUF012/013, C41x, UP028, B008, BLE001, PLR1722, DTZ, noqa)
+  ([`0f2d878`](https://github.com/djachenko/justin_utils/commit/0f2d878cc08ea1fcf88d8d30aa56d75d54f02d46))
+
+### Chores
+
+- Pin ruff to >= 0.16, < 0.17
+  ([`04157f0`](https://github.com/djachenko/justin_utils/commit/04157f0ea62cc2d790c319a041c4efe343540014))
+
+### Code Style
+
+- Apply ruff 0.16 auto-fixes (UP006/UP035, I001, C41x, B009)
+  ([`91bf2d1`](https://github.com/djachenko/justin_utils/commit/91bf2d1af497b1b251a176cc339fc1bb3bcb6e4a))
+
+
 ## v0.2.2 (2026-06-30)
 
 ### Bug Fixes
