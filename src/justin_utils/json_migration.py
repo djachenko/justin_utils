@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Dict
 
 from justin_utils.singleton import Singleton
 
 Version = int
-JsonObject = Dict
+JsonObject = dict
 
 
 class JsonMigration(ABC):
@@ -24,7 +23,7 @@ class JsonMigrator(Singleton):
     def __init__(self) -> None:
         super().__init__()
 
-        self.__migrations: Dict[Version, JsonMigration] = {}
+        self.__migrations: dict[Version, JsonMigration] = {}
 
     def register(self, migration: JsonMigration):
         version = migration.version

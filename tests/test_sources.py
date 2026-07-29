@@ -3,7 +3,11 @@ from unittest.mock import patch
 import pytest
 
 from justin_utils.filesystem import File
-from justin_utils.sources import ExternalMetadataSource, InternalMetadataSource, parse_sources
+from justin_utils.sources import (
+    ExternalMetadataSource,
+    InternalMetadataSource,
+    parse_sources,
+)
 
 STEM = "photo"
 OTHER_STEM = "other"

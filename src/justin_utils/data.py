@@ -1,7 +1,7 @@
 from datetime import timedelta
 from enum import Enum
 from functools import cache
-from typing import List, Optional, Union, overload
+from typing import Union, overload
 
 
 class DataSize:
@@ -19,7 +19,7 @@ class DataSize:
 
         @staticmethod
         @cache
-        def sorted_units() -> List['DataSize.Unit']:
+        def sorted_units() -> list['DataSize.Unit']:
             return sorted([
                 DataSize.Unit.BYTE,
                 DataSize.Unit.KILOBYTE,
@@ -134,7 +134,7 @@ class DataSpeed:
 
         return result
 
-    def canonic_value(self) -> Optional[float]:
+    def canonic_value(self) -> float | None:
         if self.__time.total_seconds() == 0:
             return None
 

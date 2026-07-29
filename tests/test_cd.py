@@ -28,9 +28,8 @@ class TestCd:
         target.mkdir()
         previous = Path.cwd()
 
-        with pytest.raises(ValueError):
-            with cd(target):
-                raise ValueError("boom")
+        with pytest.raises(ValueError), cd(target):
+            raise ValueError("boom")
 
         assert Path.cwd() == previous
 
@@ -41,6 +40,5 @@ class TestCd:
         if create_as_file:
             path.touch()
 
-        with pytest.raises(AssertionError):
-            with cd(path):
-                pass
+        with pytest.raises(AssertionError), cd(path):
+            pass

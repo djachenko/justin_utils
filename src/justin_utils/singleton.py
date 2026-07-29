@@ -1,6 +1,6 @@
 from abc import ABC
 from functools import cache
-from typing import TypeVar, Type
+from typing import Self, TypeVar
 
 T = TypeVar('T', bound='Singleton')
 
@@ -15,7 +15,7 @@ class Singleton(ABC):
 
     @classmethod
     @cache
-    def instance(cls: Type[T]) -> T:
+    def instance(cls) -> Self:
         cls.__initiating_from_instance = True
 
         instance = cls()
