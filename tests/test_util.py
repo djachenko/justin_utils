@@ -7,7 +7,7 @@ from justin_utils.util import parse_date
 
 
 def _today_year() -> int:
-    return date.today().year
+    return date.today().year  # noqa: DTZ011
 
 
 class TestParseDate:

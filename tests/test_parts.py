@@ -4,7 +4,16 @@ import pytest
 from typer.testing import CliRunner
 
 from justin_utils.cd import cd
-from justin_utils.parts import Part, app, index_length, make, new_part_name, offset, renumber, to_padded_string
+from justin_utils.parts import (
+    Part,
+    app,
+    index_length,
+    make,
+    new_part_name,
+    offset,
+    renumber,
+    to_padded_string,
+)
 
 runner = CliRunner()
 

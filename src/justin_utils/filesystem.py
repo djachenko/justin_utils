@@ -5,9 +5,10 @@ import shutil
 import sys
 import webbrowser
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
-from typing import List, Dict, Callable, Self, Iterable
+from typing import ClassVar, Self
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
@@ -19,22 +20,22 @@ from justin_utils.time_formatter import format_time
 from justin_utils.transfer import TransferSpeedMeter, TransferTimeEstimator
 
 
-def __subfolders(path: Path) -> List[Path]:
+def __subfolders(path: Path) -> list[Path]:
     if path.exists():
         return [i for i in path.iterdir() if i.is_dir()]
 
     return []
 
 
-def __subfiles(path: Path) -> List[Path]:
+def __subfiles(path: Path) -> list[Path]:
     return [i for i in path.iterdir() if i.is_file()]
 
 
-def __tree_is_empty(path: Path):
-    return len(__subfiles(path)) == 0 and all([__tree_is_empty(subfolder) for subfolder in __subfolders(path)])
+def __tree_is_empty(path: Path) -> bool:
+    return len(__subfiles(path)) == 0 and all(__tree_is_empty(subfolder) for subfolder in __subfolders(path))
 
 
-def __flatten(path: Path) -> List[Path]:
+def __flatten(path: Path) -> list[Path]:
     files = []
 
     for entry in path.iterdir():
@@ -46,7 +47,7 @@ def __flatten(path: Path) -> List[Path]:
     return files
 
 
-def __check_paths(src_path: Path, dst_path: Path):
+def __check_paths(src_path: Path, dst_path: Path) -> None:
     assert isinstance(src_path, Path)
     assert isinstance(dst_path, Path)
 
@@ -56,7 +57,7 @@ def __check_paths(src_path: Path, dst_path: Path):
     assert src_path.exists()
 
 
-def open_file_manager(path: Path):
+def open_file_manager(path: Path) -> None:
     # noinspection PyTypeChecker
     webbrowser.open(str(path))
 
@@ -96,7 +97,7 @@ def __get_mount(path: Path) -> Path:
 
 # region generic operations
 
-def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, Path], None], action_name: str):
+def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, Path], None], action_name: str) -> None:
     assert src_path.is_dir()
 
     dst_path = dst_path.resolve()
@@ -149,7 +150,7 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 
 # region move operations
 
-def __move_file(file_path: Path, new_path: Path):
+def __move_file(file_path: Path, new_path: Path) -> None:
     assert __get_mount(file_path) != __get_mount(new_path)
 
     try:
@@ -170,7 +171,7 @@ def __move_file(file_path: Path, new_path: Path):
 __move_tree = partial(__handle_tree, file_handler=__move_file, action_name="Moving")
 
 
-def move(src_path: Path, dst_path: Path):
+def move(src_path: Path, dst_path: Path) -> None:
     __check_paths(src_path, dst_path)
 
     new_file_path = dst_path / src_path.name
@@ -194,7 +195,7 @@ def move(src_path: Path, dst_path: Path):
 
 # region copy operations
 
-def __copy_file(file_path: Path, new_path: Path):
+def __copy_file(file_path: Path, new_path: Path) -> None:
     new_path = new_path.resolve()
 
     assert not new_path.exists()
@@ -211,7 +212,7 @@ def __copy_file(file_path: Path, new_path: Path):
 __copy_tree = partial(__handle_tree, file_handler=__copy_file, action_name="Copying")
 
 
-def copy(src_path: Path, dst_path: Path):
+def copy(src_path: Path, dst_path: Path) -> None:
     __check_paths(src_path, dst_path)
 
     new_item_path = dst_path / src_path.name
@@ -228,7 +229,7 @@ def copy(src_path: Path, dst_path: Path):
 
 # region remove operations
 
-def __remove_file(file_path: Path):
+def __remove_file(file_path: Path) -> None:
     file_path.unlink()
 
 
@@ -247,7 +248,7 @@ def __remove_tree(path: Path) -> None:
 
 class Movable(ABC):
     @abstractmethod
-    def move(self, path: Path):
+    def move(self, path: Path) -> None:
         pass
 
     @abstractmethod
@@ -338,7 +339,7 @@ class File(PathBased):
     def __repr__(self) -> str:
         return str(self)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.path)
 
     def __eq__(self, o: object) -> bool:
@@ -347,12 +348,12 @@ class File(PathBased):
 
         return o.path == self.path
 
-    def __lt__(self, other: 'File') -> bool:
+    def __lt__(self, other: File) -> bool:
         return self.name < other.name
 
 
 class Folder(PathBased):
-    __FILES_TO_UNLINK = [name.lower() for name in [
+    __FILES_TO_UNLINK: ClassVar[list[str]] = [name.lower() for name in [
         ".DS_store",
         "NC_FLLST.DAT",
     ]]
@@ -361,15 +362,16 @@ class Folder(PathBased):
     def __init__(self, path: Path) -> None:
         super().__init__(path)
 
-        self.__subfolder_mapping: Dict[str, Folder] | None = None
-        self.__files: List[File] | None = None
+        self.__subfolder_mapping: dict[str, Self] | None = None
+        self.__files: list[File] | None = None
 
     @property
-    def __subfolders(self) -> Dict[str, Folder]:
+    def __subfolders(self) -> dict[str, Self]:
         if self.__subfolder_mapping is None:
             self.refresh()
 
-        return self.__subfolder_mapping  # type: ignore[return-value]
+        assert self.__subfolder_mapping is not None
+        return self.__subfolder_mapping
 
     @property
     def name(self) -> str:
@@ -380,11 +382,12 @@ class Folder(PathBased):
         return self.path.stem
 
     @property
-    def files(self) -> List[File]:
+    def files(self) -> list[File]:
         if self.__files is None:
             self.refresh()
 
-        return self.__files  # type: ignore[return-value]
+        assert self.__files is not None
+        return self.__files
 
     @property
     def total_size(self) -> int:
@@ -392,8 +395,8 @@ class Folder(PathBased):
             sum(subfolder.total_size for subfolder in self.subfolders)
 
     @property
-    def subfolders(self) -> List[Self]:
-        return sorted(list(self.__subfolders.values()), key=lambda x: x.name)  # type: ignore[arg-type, return-value]
+    def subfolders(self) -> list[Self]:
+        return sorted(self.__subfolders.values(), key=lambda x: x.name)
 
     def __contains__(self, key: str) -> bool:
         return key in self.__subfolders
@@ -420,7 +423,7 @@ class Folder(PathBased):
 
             return subfolder[rest[0]]
         else:
-            return self.__subfolders.get(key)  # type: ignore[return-value]
+            return self.__subfolders.get(key)
 
     def __get_by_path(self, path: Path) -> Self | None:
         root, *rest = path.parts
@@ -438,7 +441,7 @@ class Folder(PathBased):
 
         return subfolder[Path(*rest)]
 
-    def flatten(self) -> List[File]:
+    def flatten(self) -> list[File]:
         result = self.files.copy()
 
         for subtree in self.subfolders:
@@ -472,7 +475,7 @@ class Folder(PathBased):
 
         self.path.rmdir()
 
-    def refresh(self):
+    def refresh(self) -> None:
         self.__subfolder_mapping = {}
         self.__files = []
 
@@ -485,7 +488,7 @@ class Folder(PathBased):
                 else:
                     try:
                         child_tree.remove()
-                    except Exception:
+                    except Exception:  # noqa: BLE001
                         print(f"Failed to remove empty tree: \"{child_tree}\"")
 
                         self.__subfolders[child.name] = child_tree
@@ -501,7 +504,7 @@ class Folder(PathBased):
             else:
                 print("Path is neither file nor dir")
 
-                exit(1)
+                sys.exit(1)
 
         self.__files.sort(key=lambda x: x.name)
 
@@ -525,7 +528,7 @@ class Folder(PathBased):
 
         self.refresh()
 
-    def merge_into(self, new_path):
+    def merge_into(self, new_path: Path) -> None:
         for subtree in self.subfolders:
             subtree.move(new_path)
 
@@ -541,10 +544,10 @@ class Folder(PathBased):
         return str(self)
 
     @property
-    def __key(self):
+    def __key(self) -> Path:
         return self.path
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.__key)
 
     def __eq__(self, other: object) -> bool:
@@ -553,7 +556,7 @@ class Folder(PathBased):
     def __type_copy(self, path: Path) -> Self:
         return type(self).from_path(path)
 
-    def __truediv__(self, other) -> Self:
+    def __truediv__(self, other: str | Path) -> Self:
         return self.__type_copy(self.path / other)
 
     def mkdir(self) -> None:
@@ -595,8 +598,8 @@ class FolderBased(PathBased):
         self.folder.move(path)
 
 
-def parse_paths(paths: List[Path]) -> List[PathBased]:
-    result: List[PathBased] = []
+def parse_paths(paths: list[Path]) -> list[PathBased]:
+    result: list[PathBased] = []
 
     for path in paths:
         if path.is_file():

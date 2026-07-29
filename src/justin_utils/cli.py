@@ -1,9 +1,10 @@
 import sys
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass, asdict
+from collections.abc import Callable, Iterable
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Iterable, Dict, ClassVar, Type, Callable, List, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
@@ -28,7 +29,7 @@ class Parameter:
     nargs: str = None
     default: Any = None
     action: Action = None
-    type: Type | Callable[[str], T] = None
+    type: type | Callable[[str], T] = None
     choices: Iterable[T] = None
 
     not_kw_fields: ClassVar[Iterable[str]] = [
@@ -51,7 +52,7 @@ class Parameter:
         return tuple(i for i in (self.name,) + self.flags if i)
 
     @property
-    def params(self) -> Dict[str, Any]:
+    def params(self) -> dict[str, Any]:
         return {k: v for k, v in asdict(self).items() if k not in Parameter.not_kw_fields and v}
 
 
@@ -61,7 +62,7 @@ class Action(ABC):
         pass
 
     @property
-    def parameters(self) -> List[Parameter]:
+    def parameters(self) -> list[Parameter]:
         return []
 
     @abstractmethod
@@ -133,7 +134,7 @@ class App:
         self.__commands = commands
         self.__context = context
 
-    def run(self, args: Iterable[str] = None) -> None:
+    def run(self, args: Iterable[str] | None = None) -> None:
         parser = ArgumentParser()
 
         parser_adder = parser.add_subparsers()

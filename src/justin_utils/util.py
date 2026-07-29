@@ -1,18 +1,18 @@
 import glob
 import random
 from collections import defaultdict
-from collections.abc import Sequence
-from datetime import time, date, datetime
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from datetime import date, datetime, time
 from pathlib import Path
 from time import process_time
-from typing import Iterable, TypeVar, Callable, Dict, Any, List
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 V = TypeVar("V")
 
 
 def split_by_predicates(seq: Iterable[T], *lambdas: Callable[[T], bool]) -> Iterable[Iterable[T]]:
-    return list(map(lambda x: list(filter(x, seq)), lambdas))
+    return [list(filter(x, seq)) for x in lambdas]
 
 
 def ask_for_permission(question: str) -> bool:
@@ -27,7 +27,7 @@ def ask_for_permission(question: str) -> bool:
             return answer
 
 
-def ask_for_choice_flagged(question: str, options: List[str]) -> str | None:
+def ask_for_choice_flagged(question: str, options: list[str]) -> str | None:
     print(question)
 
     for index, option in enumerate(options):
@@ -45,13 +45,13 @@ def ask_for_choice_flagged(question: str, options: List[str]) -> str | None:
     elif answer.isdecimal():
         option_index = int(answer)
 
-        if option_index in range(0, len(options)):
+        if option_index in range(len(options)):
             return options[option_index]
 
     return answer
 
 
-def ask_for_choice_with_other(question: str, options: List[str]) -> str:
+def ask_for_choice_with_other(question: str, options: list[str]) -> str:
     other = "other"
 
     options.append(other)
@@ -64,7 +64,7 @@ def ask_for_choice_with_other(question: str, options: List[str]) -> str:
     return option
 
 
-def ask_for_choice(question: str, options: List[T]) -> T | str:
+def ask_for_choice(question: str, options: list[T]) -> T | str:
     assert len(options) > 0
 
     if len(options) == 1:
@@ -81,19 +81,19 @@ def ask_for_choice(question: str, options: List[T]) -> T | str:
         try:
             option_index = int(answer)
 
-            if option_index in range(0, len(options)):
+            if option_index in range(len(options)):
                 return options[option_index]
 
         except ValueError:
             pass
 
 
-def measure_time(name=None):
+def measure_time(name: str | None = None) -> Callable[..., Any]:
     if name is None:
         name = "Execution"
 
-    def decorator(func):
-        def inner(*args, **kwargs):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def inner(*args: Any, **kwargs: Any) -> Any:
             start = process_time()
 
             result = func(*args, **kwargs)
@@ -111,8 +111,8 @@ def measure_time(name=None):
     return decorator
 
 
-def concat_dictionaries(*dictionaries: Dict[T, Any]) -> Dict[T, Any]:
-    result: Dict[T, Any] = {}
+def concat_dictionaries(*dictionaries: dict[T, Any]) -> dict[T, Any]:
+    result: dict[T, Any] = {}
 
     for dictionary in dictionaries:
         keys = dictionary.keys()
@@ -134,15 +134,14 @@ def resolve_patterns(*patterns: str) -> Iterable[Path]:
 
 def flatten_lazy(list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
     for sublist in list_of_lists:
-        for item in sublist:
-            yield item
+        yield from sublist
 
 
-def flat_map(list_of_lists: Iterable[Iterable[T]]) -> List[T]:
+def flat_map(list_of_lists: Iterable[Iterable[T]]) -> list[T]:
     return list(flatten_lazy(list_of_lists))
 
 
-def distinct(items: Iterable[T]) -> List[T]:
+def distinct(items: Iterable[T]) -> list[T]:
     cache = set()
     result = []
 
@@ -161,7 +160,7 @@ def is_distinct(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool
     except TypeError:
         seq = list(seq)
 
-        seq_len = len(seq)  # type: ignore[arg-type]
+        seq_len = len(seq)
 
     return len(set(map(key, seq))) == seq_len
 
@@ -170,11 +169,11 @@ def is_iterable(obj: Any) -> bool:
     return isinstance(obj, Sequence) and not isinstance(obj, str)
 
 
-def all_same_type(seq: Iterable) -> bool:
+def all_same_type(seq: Iterable[Any]) -> bool:
     return same(type(i) for i in seq)
 
 
-def same(seq: Iterable) -> bool:
+def same(seq: Iterable[Any]) -> bool:
     return len(set(seq)) == 1
 
 
@@ -199,7 +198,7 @@ def parse_date(string: str) -> date:
 
     day, month, *year_list = [int(i) for i in string.split(separator)]
 
-    today_year = date.today().year
+    today_year = date.today().year  # noqa: DTZ011
 
     if not year_list:
         year = today_year
@@ -215,8 +214,8 @@ def parse_date(string: str) -> date:
     return date(year, month, day)
 
 
-def random_date(start: time, end: time, count: int):
-    today = date.today()
+def random_date(start: time, end: time, count: int) -> Iterator[time]:
+    today = date.today()  # noqa: DTZ011
 
     time_delta = datetime.combine(today, end) - datetime.combine(today, start)
     minutes_delta = int(time_delta.total_seconds() / 60) - 1
@@ -231,8 +230,8 @@ def random_date(start: time, end: time, count: int):
         yield result
 
 
-def group_by(key: Callable[[T], V], seq: Iterable[T]) -> Dict[V, List[T]]:
-    mapping = defaultdict(lambda: [])
+def group_by(key: Callable[[T], V], seq: Iterable[T]) -> dict[V, list[T]]:
+    mapping = defaultdict(list)
 
     for i in seq:
         mapping[key(i)].append(i)
@@ -240,7 +239,7 @@ def group_by(key: Callable[[T], V], seq: Iterable[T]) -> Dict[V, List[T]]:
     return mapping
 
 
-def stride(seq: Iterable[T], step: int) -> Iterable[List[T]]:
+def stride(seq: Iterable[T], step: int) -> Iterable[list[T]]:
     # i = iter(seq)
     #
     # def inner() -> Iterable[T]:
@@ -284,7 +283,7 @@ def bfs(start: T, provider: Callable[[T], Iterable[T]]) -> None:
         roots += provider(roots.pop(0))
 
 
-def get_prefixes(s: str, separator: str) -> List[str]:
+def get_prefixes(s: str, separator: str) -> list[str]:
     prefixes = []
     split = s.split(separator)
 
@@ -294,8 +293,8 @@ def get_prefixes(s: str, separator: str) -> List[str]:
     return prefixes
 
 
-def merge_dicts(merger: Callable[[V, V], V], *dicts: Dict[T, V]) -> Dict[T, V]:
-    result: Dict[T, V] = {}
+def merge_dicts(merger: Callable[[V, V], V], *dicts: dict[T, V]) -> dict[T, V]:
+    result: dict[T, V] = {}
 
     for d in dicts:
         for key in d:
@@ -311,7 +310,7 @@ K = TypeVar("K")
 
 
 class keydefaultdict(dict[K, V]):
-    def __init__(self, default_factory: Callable[[K], V], *args, **kwargs):
+    def __init__(self, default_factory: Callable[[K], V], *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.default_factory = default_factory

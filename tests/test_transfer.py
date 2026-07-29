@@ -6,8 +6,8 @@ from justin_utils.transfer import TransferSpeedMeter
 class TestTransferSpeedMeter:
     @pytest.mark.parametrize("action", [
         lambda meter: meter.feed(1024),
-        lambda meter: getattr(meter, "average_value"),
-        lambda meter: getattr(meter, "current_value"),
+        lambda meter: meter.average_value,
+        lambda meter: meter.current_value,
     ])
     def test_action_before_start_raises(self, action):
         meter = TransferSpeedMeter()

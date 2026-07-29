@@ -1,14 +1,15 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
-from typing import Iterable, Self
+from typing import ClassVar, Self
 
 from exif import Image  # type: ignore[import-untyped]
-
 from PIL import ExifTags
-from PIL.Image import Exif as PilExif
 from PIL import Image as ImageModule
+from PIL.Image import Exif as PilExif
+
 
 class Exif(ABC):
     @property
@@ -26,13 +27,13 @@ class Exif(ABC):
 
 
 class PillowExif(Exif):
-    __reverse_mapping = {v: k for k, v in ExifTags.TAGS.items()}
+    __reverse_mapping: ClassVar[dict[str, int]] = {v: k for k, v in ExifTags.TAGS.items()}
 
     @cached_property
     def date_taken(self) -> datetime:
         date_str = self.__get_tag_value("DateTimeOriginal") or self.__get_tag_value("DateTime")
         assert date_str is not None
-        return datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
+        return datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")  # noqa: DTZ007
 
     def __get_tag_value(self, tag: str) -> str | None:
         return self.source_exif.get(PillowExif.__reverse_mapping[tag])
@@ -51,12 +52,12 @@ class NativeExif(Exif):
     @cached_property
     def date_taken(self) -> datetime:
         if hasattr(self.source_exif, "datetime_original"):
-            return datetime.strptime(
+            return datetime.strptime(  # noqa: DTZ007
                 self.source_exif.datetime_original,
                 "%Y:%m:%d %H:%M:%S"
             )
         elif hasattr(self.source_exif, "datetime_digitized"):
-            return datetime.strptime(
+            return datetime.strptime(  # noqa: DTZ007
                 self.source_exif.datetime_digitized,
                 "%Y:%m:%d %H:%M:%S"
             )
@@ -85,7 +86,7 @@ def parse_exif(path: Path) -> Exif | None:
 
     suffix = path.suffix.lower()
 
-    exif_class: type[PillowExif] | type[NativeExif]
+    exif_class: type[PillowExif | NativeExif]
 
     if suffix in [".nef", ".dng", ]:
         exif_class = PillowExif

@@ -1,5 +1,9 @@
 from collections import defaultdict
-from typing import TypeVar, Callable, Iterable, Iterator, List, Set, Tuple, Dict, Optional, Hashable, Any
+from collections.abc import Callable, Hashable, Iterable, Iterator
+from typing import (
+    Any,
+    TypeVar,
+)
 
 Element = TypeVar("Element")
 Result = TypeVar("Result")
@@ -19,7 +23,7 @@ def identity(x):
 class Sequence(Iterable[Element]):
     def __init__(
             self,
-            base: Iterable[Element] = None,
+            base: Iterable[Element] | None = None,
             predicate: Callable[[Element], bool] = lambda _: True,
             modifier: Callable[[Element], Result] = identity
     ) -> None:
@@ -50,7 +54,7 @@ class Sequence(Iterable[Element]):
         return cls.with_sequence([element])
 
     @classmethod
-    def with_dict(cls, dictionary: Dict[Key, Value]) -> 'Sequence[Tuple[Key, Value]]':
+    def with_dict(cls, dictionary: dict[Key, Value]) -> 'Sequence[tuple[Key, Value]]':
         return Sequence.with_sequence(dictionary.items())
 
     def filter(self, predicate: Callable[[Element], bool]) -> 'Sequence[Element]':
@@ -62,8 +66,7 @@ class Sequence(Iterable[Element]):
     def flat_map(self, modifier: Callable[[Element], Iterable[Result]] = identity) -> 'Sequence[Result]':
         def generator(seq):
             for subsequence in seq.map(modifier):
-                for i in subsequence:
-                    yield i
+                yield from subsequence
 
         return Sequence(generator(self))
 
@@ -80,13 +83,12 @@ class Sequence(Iterable[Element]):
     def skip(self, count: int) -> 'Sequence[Element]':
         return self.__filter_by_index(lambda i: i >= count)
 
-    def not_null(self, key: Callable[[Element], Optional[Any]] = identity) -> 'Sequence[Element]':
+    def not_null(self, key: Callable[[Element], Any | None] = identity) -> 'Sequence[Element]':
         return self.filter(lambda x: key(x) is not None)
 
     def append(self, seq: Iterable[Element]) -> 'Sequence[Element]':
         def gen(*seqs: Iterable[Element]):
-            for s in seqs:
-                yield s
+            yield from seqs
 
         return Sequence(gen(self, seq)).flat_map()
 
@@ -102,13 +104,13 @@ class Sequence(Iterable[Element]):
 
         return acc
 
-    def group_by(self, key: Callable[[Element], Key]) -> 'Sequence[Tuple[Key, Sequence[Element]]]':
+    def group_by(self, key: Callable[[Element], Key]) -> 'Sequence[tuple[Key, Sequence[Element]]]':
         def reducer(acc, element):
             acc[key(element)].append(element)
 
             return acc
 
-        result = self.reduce(defaultdict(lambda: []), reducer)
+        result = self.reduce(defaultdict(list), reducer)
 
         return Sequence(result.items()) \
             .map(lambda e: (e[0], Sequence(e[1])))
@@ -140,19 +142,19 @@ class Sequence(Iterable[Element]):
     def cache(self) -> 'Sequence[Element]':
         return Sequence(self.to_list())
 
-    def max(self, key: Callable[[Element], Any] = identity) -> Optional[Element]:
+    def max(self, key: Callable[[Element], Any] = identity) -> Element | None:
         return max(self, key=key, default=None)
 
-    def min(self, key: Callable[[Element], Any] = identity) -> Optional[Element]:
+    def min(self, key: Callable[[Element], Any] = identity) -> Element | None:
         return min(self, key=key, default=None)
 
-    def to_list(self) -> List[Element]:
+    def to_list(self) -> list[Element]:
         return list(self)
 
-    def to_set(self) -> Set[Element]:
+    def to_set(self) -> set[Element]:
         return set(self)
 
-    def to_dict(self, item_generator: Callable[[Element], Tuple[Key, Value]] = identity) -> Dict[Key, Value]:
+    def to_dict(self, item_generator: Callable[[Element], tuple[Key, Value]] = identity) -> dict[Key, Value]:
         return {k: v for k, v in self.map(item_generator)}
 
     def each(self, action: Callable[[Element], None]) -> None:
