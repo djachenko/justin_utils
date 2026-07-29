@@ -1,10 +1,11 @@
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
 
 @contextmanager
-def cd(new_path: Path):
+def cd(new_path: Path) -> Iterator[None]:
     assert new_path.exists()
     assert new_path.is_dir()
 

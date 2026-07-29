@@ -1,7 +1,7 @@
 from datetime import timedelta
 from enum import Enum
 from functools import cache
-from typing import List, Optional, Union
+from typing import List, Optional, Union, overload
 
 
 class DataSize:
@@ -73,7 +73,11 @@ class DataSize:
     def from_bytes(cls, size: int) -> 'DataSize':
         return DataSize.__from_unit(size, DataSize.Unit.BYTE)
 
-    def __truediv__(self, other):
+    @overload
+    def __truediv__(self, other: timedelta) -> 'DataSpeed': ...
+    @overload
+    def __truediv__(self, other: 'DataSpeed') -> timedelta | None: ...
+    def __truediv__(self, other: 'timedelta | DataSpeed') -> 'DataSpeed | timedelta | None':
         if isinstance(other, timedelta):
             return DataSpeed(self, other)
         elif isinstance(other, DataSpeed):
@@ -90,7 +94,7 @@ class DataSize:
         else:
             assert False
 
-    def __sub__(self, other) -> 'DataSize':
+    def __sub__(self, other: 'DataSize') -> 'DataSize':
         if isinstance(other, DataSize):
             return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
         else:

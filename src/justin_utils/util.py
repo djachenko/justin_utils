@@ -1,7 +1,7 @@
 import glob
 import random
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from datetime import time, date, datetime
 from pathlib import Path
 from time import process_time
@@ -88,12 +88,12 @@ def ask_for_choice(question: str, options: List[T]) -> T | str:
             pass
 
 
-def measure_time(name=None):
+def measure_time(name: str | None = None) -> Callable[..., Any]:
     if name is None:
         name = "Execution"
 
-    def decorator(func):
-        def inner(*args, **kwargs):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def inner(*args: Any, **kwargs: Any) -> Any:
             start = process_time()
 
             result = func(*args, **kwargs)
@@ -161,7 +161,7 @@ def is_distinct(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool
     except TypeError:
         seq = list(seq)
 
-        seq_len = len(seq)  # type: ignore[arg-type]
+        seq_len = len(seq)
 
     return len(set(map(key, seq))) == seq_len
 
@@ -170,11 +170,11 @@ def is_iterable(obj: Any) -> bool:
     return isinstance(obj, Sequence) and not isinstance(obj, str)
 
 
-def all_same_type(seq: Iterable) -> bool:
+def all_same_type(seq: Iterable[Any]) -> bool:
     return same(type(i) for i in seq)
 
 
-def same(seq: Iterable) -> bool:
+def same(seq: Iterable[Any]) -> bool:
     return len(set(seq)) == 1
 
 
@@ -215,7 +215,7 @@ def parse_date(string: str) -> date:
     return date(year, month, day)
 
 
-def random_date(start: time, end: time, count: int):
+def random_date(start: time, end: time, count: int) -> Iterator[time]:
     today = date.today()
 
     time_delta = datetime.combine(today, end) - datetime.combine(today, start)
@@ -311,7 +311,7 @@ K = TypeVar("K")
 
 
 class keydefaultdict(dict[K, V]):
-    def __init__(self, default_factory: Callable[[K], V], *args, **kwargs):
+    def __init__(self, default_factory: Callable[[K], V], *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.default_factory = default_factory

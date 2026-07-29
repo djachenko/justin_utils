@@ -11,7 +11,7 @@ from justin_utils.filesystem import Movable, File
 class Source(Movable):
     @property
     @abstractmethod
-    def mtime(self):
+    def mtime(self) -> float:
         pass
 
     @property
@@ -28,7 +28,7 @@ class Source(Movable):
     def stem(self) -> str:
         return self.name
 
-    def move(self, path: Path):
+    def move(self, path: Path) -> None:
         for file in self.files():
             file.move(path)
 
@@ -45,7 +45,7 @@ class Source(Movable):
             file.copy(path)
 
     @property
-    def size(self):
+    def size(self) -> int:
         return sum([f.size for f in self.files()])
 
     @abstractmethod
@@ -73,11 +73,11 @@ class InternalMetadataSource(Source):
         self.__file = file
 
     @property
-    def mtime(self):
+    def mtime(self) -> float:
         return self.__file.mtime
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__file.stem
 
     def files(self) -> List[File]:
@@ -111,14 +111,14 @@ class ExternalMetadataSource(Source):
         self.metadata = metadata
 
     @property
-    def mtime(self):
+    def mtime(self) -> float:
         if self.metadata is not None:
             return self.metadata.mtime
         else:
-            return -1
+            return -1.0
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.raw.stem
 
     @cached_property

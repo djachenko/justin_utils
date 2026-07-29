@@ -62,7 +62,7 @@ class TransferSpeedMeter:
 
 class TransferTimeEstimator:
     @staticmethod
-    def estimate(speed: DataSpeed, remaining_size: DataSize) -> timedelta:
+    def estimate(speed: DataSpeed, remaining_size: DataSize) -> timedelta | None:
         remaining_time = remaining_size / speed
 
         return remaining_time

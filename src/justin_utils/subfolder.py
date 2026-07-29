@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 
-def __run():
+def __run() -> None:
     parser = ArgumentParser()
 
     parser.add_argument("name", type=str)
