@@ -7,13 +7,12 @@ from pathlib import Path
 from typing import IO, ClassVar, Self, TypeAlias
 
 from PIL import Image as ImageModule
-from PIL._typing import StrOrBytesPath
 from PIL.ExifTags import IFD, Base
 from PIL.Image import Image as PilImage
 
 from justin_utils.util import first
 
-ImageSource: TypeAlias = StrOrBytesPath | IO[bytes]
+ImageSource: TypeAlias = Path | IO[bytes]
 
 
 class Container(ABC):
@@ -82,9 +81,15 @@ class Exif:
 
     @classmethod
     def __from_image(cls, image: PilImage) -> Self | None:
-        date_string = image.getexif().get_ifd(IFD.Exif).get(Base.DateTimeOriginal)
+        date_string = image \
+            .getexif() \
+            .get_ifd(IFD.Exif) \
+            .get(Base.DateTimeOriginal)
 
         if date_string is None:
+            return None
+
+        if not isinstance(date_string, str):
             return None
 
         try:
