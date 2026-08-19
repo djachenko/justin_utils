@@ -51,7 +51,6 @@ parts      = [
 ]
 exif       = [
     "Pillow",
-    "exif",
 ]
 sources    = [
     "justin_utils[util]",

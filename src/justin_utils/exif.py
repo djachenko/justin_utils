@@ -1,101 +1,105 @@
+import io
+import struct
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from datetime import datetime
-from functools import cached_property
 from pathlib import Path
-from typing import ClassVar, Self
+from typing import IO, ClassVar, Self, TypeAlias
 
-from exif import Image  # type: ignore[import-untyped]
-from PIL import ExifTags
 from PIL import Image as ImageModule
-from PIL.Image import Exif as PilExif
+from PIL.ExifTags import IFD, Base
+from PIL.Image import Image as PilImage
+
+from justin_utils.util import first
+
+ImageSource: TypeAlias = Path | IO[bytes]
 
 
-class Exif(ABC):
-    @property
+class Container(ABC):
     @abstractmethod
-    def date_taken(self) -> datetime:
+    def read(self, path: Path) -> ImageSource | None:
         pass
+
+
+class RafContainer(Container):
+    # Pillow не открывает RAF, но внутри лежит полноразмерный JPEG-превью,
+    # смещение и длина которого записаны в заголовке контейнера
+    __MAGIC: ClassVar[bytes] = b"FUJIFILMCCD-RAW "
+    __JPEG_HEADER_OFFSET: ClassVar[int] = 84
+
+    def read(self, path: Path) -> ImageSource | None:
+        with path.open("rb") as file:
+            if file.read(len(self.__MAGIC)) != self.__MAGIC:
+                return None
+
+            file.seek(self.__JPEG_HEADER_OFFSET)
+
+            offset, length = struct.unpack(">II", file.read(8))
+
+            file.seek(offset)
+
+            return io.BytesIO(file.read(length))
+
+
+class PlainContainer(Container):
+    def read(self, path: Path) -> ImageSource | None:
+        return path
+
+
+class Exif:
+    __DATE_FORMAT: ClassVar[str] = "%Y:%m:%d %H:%M:%S"
+
+    __CONTAINERS: ClassVar[list[Container]] = [
+        RafContainer(),
+        PlainContainer(),
+    ]
+
+    def __init__(self, date_taken: datetime) -> None:
+        super().__init__()
+
+        self.date_taken = date_taken
 
     def __lt__(self, other: 'Exif') -> bool:
         return self.date_taken < other.date_taken
 
     @classmethod
-    @abstractmethod
-    def from_path(cls, path: Path) -> Self:
-        pass
+    def from_path(cls, path: Path) -> Self | None:
+        try:
+            source = first(container.read(path) for container in cls.__CONTAINERS)
 
+            if source is None:
+                return None
 
-class PillowExif(Exif):
-    __reverse_mapping: ClassVar[dict[str, int]] = {v: k for k, v in ExifTags.TAGS.items()}
-
-    @cached_property
-    def date_taken(self) -> datetime:
-        date_str = self.__get_tag_value("DateTimeOriginal") or self.__get_tag_value("DateTime")
-        assert date_str is not None
-        return datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")  # noqa: DTZ007
-
-    def __get_tag_value(self, tag: str) -> str | None:
-        return self.source_exif.get(PillowExif.__reverse_mapping[tag])
-
-    def __init__(self, exif: PilExif) -> None:
-        super().__init__()
-
-        self.source_exif = exif
+            # теги читаются лениво, поэтому разбор обязан уложиться в открытую картинку
+            with ImageModule.open(source) as image:
+                return cls.__from_image(image)
+        except OSError:
+            return None
 
     @classmethod
-    def from_path(cls, path: Path) -> Self:
-        return cls(ImageModule.open(path).getexif())
+    def __from_image(cls, image: PilImage) -> Self | None:
+        date_string = image \
+            .getexif() \
+            .get_ifd(IFD.Exif) \
+            .get(Base.DateTimeOriginal)
 
+        if date_string is None:
+            return None
 
-class NativeExif(Exif):
-    @cached_property
-    def date_taken(self) -> datetime:
-        if hasattr(self.source_exif, "datetime_original"):
-            return datetime.strptime(  # noqa: DTZ007
-                self.source_exif.datetime_original,
-                "%Y:%m:%d %H:%M:%S"
-            )
-        elif hasattr(self.source_exif, "datetime_digitized"):
-            return datetime.strptime(  # noqa: DTZ007
-                self.source_exif.datetime_digitized,
-                "%Y:%m:%d %H:%M:%S"
-            )
-        else:
-            assert False
+        if not isinstance(date_string, str):
+            return None
 
-    def __init__(self, exif: Image) -> None:
-        super().__init__()
-
-        self.source_exif = exif
-
-    @classmethod
-    def from_path(cls, path: Path) -> Self:
-        with path.open("rb") as image_file:
-            my_image = Image(image_file)
-
-            return cls(my_image)
+        try:
+            return cls(datetime.strptime(date_string, cls.__DATE_FORMAT))  # noqa: DTZ007
+        except ValueError:
+            return None
 
 
 def parse_exif(path: Path) -> Exif | None:
-    if path is None:
-        return None
-
     if path.is_dir():
         return None
 
-    suffix = path.suffix.lower()
-
-    exif_class: type[PillowExif | NativeExif]
-
-    if suffix in [".nef", ".dng", ]:
-        exif_class = PillowExif
-    elif suffix in [".jpg", ]:
-        exif_class = NativeExif
-    else:
-        return None
-
-    return exif_class.from_path(path)
+    return Exif.from_path(path)
 
 
 def exif_sorted(seq: Iterable[Path]) -> Iterable[Path]:
