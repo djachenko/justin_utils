@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-08-19)
+
+### Features
+
+- Rewrite exif parsing with container abstraction and RAF support
+  ([`556ac3c`](https://github.com/djachenko/justin_utils/commit/556ac3c390d745ff238df2211777ba99f5ae153e))
+
+### Refactoring
+
+- Make RAF magic and header offset class constants
+  ([`32edf21`](https://github.com/djachenko/justin_utils/commit/32edf2113f37308412d36e11aaf1d2b1941f4e68))
+
+- Narrow ImageSource to Path | IO[bytes], drop private PIL import
+  ([`ac12695`](https://github.com/djachenko/justin_utils/commit/ac12695b2c6d24d44be9d4f296e11dae980fd667))
+
+- Pass path to containers instead of a shared file handle
+  ([`5dbf072`](https://github.com/djachenko/justin_utils/commit/5dbf072c1919bdf7ba0a6b4fbdf7285dc1131eae))
+
+### Testing
+
+- Extract raf container builder to drop duplicated header assembly
+  ([`623c954`](https://github.com/djachenko/justin_utils/commit/623c954d3187fa76358eff43ab4c55c61b3163f9))
+
+
 ## v0.3.0 (2026-07-29)
 
 ### Chores
