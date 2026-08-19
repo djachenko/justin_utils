@@ -17,6 +17,13 @@ _RAF_MAGIC = b"FUJIFILMCCD-RAW "
 _RAF_JPEG_HEADER_OFFSET = 84
 
 
+def _raf_bytes(payload):
+    header = _RAF_MAGIC.ljust(_RAF_JPEG_HEADER_OFFSET, b"\0")
+    offset = _RAF_JPEG_HEADER_OFFSET + 8
+
+    return header + struct.pack(">II", offset, len(payload)) + payload + b"raw sensor data"
+
+
 @pytest.fixture
 def image_path(tmp_path):
     path = tmp_path / "image.jpg"
@@ -39,12 +46,9 @@ def jpeg_path(tmp_path):
 @pytest.fixture
 def raf_path(tmp_path):
     payload = b"embedded jpeg bytes"
-    offset = _RAF_JPEG_HEADER_OFFSET + 8
-
-    header = _RAF_MAGIC.ljust(_RAF_JPEG_HEADER_OFFSET, b"\0") + struct.pack(">II", offset, len(payload))
 
     path = tmp_path / "image.raf"
-    path.write_bytes(header + payload + b"raw sensor data")
+    path.write_bytes(_raf_bytes(payload))
 
     return path, payload
 
@@ -128,13 +132,8 @@ class TestRealFiles:
         assert exif.date_taken == _EXPECTED_DT
 
     def test_reads_raf(self, tmp_path, jpeg_path):
-        payload = jpeg_path.read_bytes()
-        offset = _RAF_JPEG_HEADER_OFFSET + 8
-
-        header = _RAF_MAGIC.ljust(_RAF_JPEG_HEADER_OFFSET, b"\0") + struct.pack(">II", offset, len(payload))
-
         path = tmp_path / "real.raf"
-        path.write_bytes(header + payload + b"raw sensor data")
+        path.write_bytes(_raf_bytes(jpeg_path.read_bytes()))
 
         exif = Exif.from_path(path)
 
