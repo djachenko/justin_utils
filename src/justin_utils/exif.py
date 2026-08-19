@@ -4,18 +4,21 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import BinaryIO, ClassVar, Self
+from typing import IO, ClassVar, Self, TypeAlias
 
 from PIL import Image as ImageModule
+from PIL._typing import StrOrBytesPath
 from PIL.ExifTags import IFD, Base
 from PIL.Image import Image as PilImage
 
 from justin_utils.util import first
 
+ImageSource: TypeAlias = StrOrBytesPath | IO[bytes]
+
 
 class Container(ABC):
     @abstractmethod
-    def read(self, file: BinaryIO) -> BinaryIO | None:
+    def read(self, path: Path) -> ImageSource | None:
         pass
 
 
@@ -28,26 +31,23 @@ class RafContainer(Container):
         self.__magic = magic
         self.__jpeg_header_offset = jpeg_header_offset
 
-    def read(self, file: BinaryIO) -> BinaryIO | None:
-        file.seek(0)
+    def read(self, path: Path) -> ImageSource | None:
+        with path.open("rb") as file:
+            if file.read(len(self.__magic)) != self.__magic:
+                return None
 
-        if file.read(len(self.__magic)) != self.__magic:
-            return None
+            file.seek(self.__jpeg_header_offset)
 
-        file.seek(self.__jpeg_header_offset)
+            offset, length = struct.unpack(">II", file.read(8))
 
-        offset, length = struct.unpack(">II", file.read(8))
+            file.seek(offset)
 
-        file.seek(offset)
-
-        return io.BytesIO(file.read(length))
+            return io.BytesIO(file.read(length))
 
 
 class PlainContainer(Container):
-    def read(self, file: BinaryIO) -> BinaryIO | None:
-        file.seek(0)
-
-        return file
+    def read(self, path: Path) -> ImageSource | None:
+        return path
 
 
 class Exif:
@@ -69,14 +69,14 @@ class Exif:
     @classmethod
     def from_path(cls, path: Path) -> Self | None:
         try:
-            # теги читаются лениво, поэтому разбор обязан уложиться в открытый файл
-            with path.open("rb") as file:
-                source = first(container.read(file) for container in cls.__CONTAINERS)
+            source = first(container.read(path) for container in cls.__CONTAINERS)
 
-                if source is None:
-                    return None
+            if source is None:
+                return None
 
-                return cls.__from_image(ImageModule.open(source))
+            # теги читаются лениво, поэтому разбор обязан уложиться в открытую картинку
+            with ImageModule.open(source) as image:
+                return cls.__from_image(image)
         except OSError:
             return None
 

@@ -52,6 +52,7 @@ def raf_path(tmp_path):
 def _source(shooting_exif=None):
     image = MagicMock()
     image.getexif.return_value = MagicMock(get_ifd=lambda tag: shooting_exif or {})
+    image.__enter__.return_value = image
 
     return patch("justin_utils.exif.ImageModule.open", return_value=image)
 
@@ -89,24 +90,20 @@ class TestContainers:
     def test_raf_reads_embedded_jpeg_slice(self, raf_path):
         path, payload = raf_path
 
-        with path.open("rb") as file:
-            assert RafContainer().read(file).getvalue() == payload
+        assert RafContainer().read(path).getvalue() == payload
 
     def test_raf_skips_other_formats(self, image_path):
-        with image_path.open("rb") as file:
-            assert RafContainer().read(file) is None
+        assert RafContainer().read(image_path) is None
 
-    def test_plain_returns_file_itself(self, image_path):
-        with image_path.open("rb") as file:
-            assert PlainContainer().read(file) is file
+    def test_plain_returns_path_itself(self, image_path):
+        assert PlainContainer().read(image_path) is image_path
 
-    def test_containers_read_from_start(self, raf_path):
+    def test_raf_read_is_repeatable(self, raf_path):
         path, payload = raf_path
+        container = RafContainer()
 
-        with path.open("rb") as file:
-            file.read()
-
-            assert RafContainer().read(file).getvalue() == payload
+        assert container.read(path).getvalue() == payload
+        assert container.read(path).getvalue() == payload
 
     def test_unreadable_file_gives_none(self, image_path):
         with patch("justin_utils.exif.ImageModule.open", side_effect=UnidentifiedImageError("nope")):
