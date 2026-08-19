@@ -24,18 +24,15 @@ class Container(ABC):
 class RafContainer(Container):
     # Pillow не открывает RAF, но внутри лежит полноразмерный JPEG-превью,
     # смещение и длина которого записаны в заголовке контейнера
-    def __init__(self, magic: bytes = b"FUJIFILMCCD-RAW ", jpeg_header_offset: int = 84) -> None:
-        super().__init__()
-
-        self.__magic = magic
-        self.__jpeg_header_offset = jpeg_header_offset
+    __MAGIC: ClassVar[bytes] = b"FUJIFILMCCD-RAW "
+    __JPEG_HEADER_OFFSET: ClassVar[int] = 84
 
     def read(self, path: Path) -> ImageSource | None:
         with path.open("rb") as file:
-            if file.read(len(self.__magic)) != self.__magic:
+            if file.read(len(self.__MAGIC)) != self.__MAGIC:
                 return None
 
-            file.seek(self.__jpeg_header_offset)
+            file.seek(self.__JPEG_HEADER_OFFSET)
 
             offset, length = struct.unpack(">II", file.read(8))
 
