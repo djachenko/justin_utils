@@ -50,7 +50,7 @@ Lightweight argparse wrapper: `App`, `Command`, `Action`, `Parameter`. Supports 
 `DataSize` and `DataSpeed` with human-readable formatting (B/KB/MB/GB and per-second variants).
 
 ### `exif`
-EXIF metadata extraction from image files via Pillow and the `exif` library. `parse_exif` auto-selects the parser by file extension. `exif_sorted` sorts a sequence of paths by date taken.
+EXIF metadata extraction via Pillow. `Exif.from_path` probes containers to reach the embedded image — RAF files carry a full-size JPEG preview, everything else is read directly — and returns `None` when the date can't be read. `exif_sorted` sorts a sequence of paths by date taken.
 
 ### `filesystem`
 `File` and `Folder` wrappers over `pathlib.Path` with move/copy/rename operations, cross-drive detection, and recursive tree handling. `RelativeFileset` preserves relative paths when moving groups of files.
