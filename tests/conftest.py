@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-FileTree = dict[str, "FileTree | str | None"]
+FileTree = dict[str, "FileTree | str | bytes | None"]
 
 
 @pytest.fixture
@@ -21,6 +21,8 @@ def create_files() -> Callable[[Path, FileTree], None]:
                 new_path.touch()
             elif isinstance(value, str):
                 new_path.write_text(value)
+            elif isinstance(value, bytes):
+                new_path.write_bytes(value)
             elif isinstance(value, dict):
                 new_path.mkdir(parents=True, exist_ok=True)
 
