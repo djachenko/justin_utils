@@ -73,6 +73,32 @@ Homepage   = "https://github.com/djachenko/justin_utils"
 Repository = "https://github.com/djachenko/justin_utils"
 Issues     = "https://github.com/djachenko/justin_utils/issues"
 
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehensions
+    "DTZ",  # naive datetime
+    "BLE",  # blind except
+    "ANN",  # annotations
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "ANN401",  # Any is the honest annotation for type introspection and decorators
+    "C416",    # explicit comprehension reads better than a dict() cast
+    "C420",    # explicit comprehension reads better than dict.fromkeys
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]
+
 [tool.mypy]
 python_version = "3.11"
 
