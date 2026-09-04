@@ -6,10 +6,10 @@ from typing import Union, overload
 
 class DataSize:
     class Unit(Enum):
-        BYTE = (2 ** 0, "B")
-        KILOBYTE = (2 ** 10, "KB")
-        MEGABYTE = (2 ** 20, "MB")
-        GIGABYTE = (2 ** 30, "GB")
+        BYTE = (2**0, "B")
+        KILOBYTE = (2**10, "KB")
+        MEGABYTE = (2**20, "MB")
+        GIGABYTE = (2**30, "GB")
 
         def __init__(self, size: int, acronym: str) -> None:
             super().__init__()
@@ -19,18 +19,20 @@ class DataSize:
 
         @staticmethod
         @cache
-        def sorted_units() -> list['DataSize.Unit']:
-            return sorted([
-                DataSize.Unit.BYTE,
-                DataSize.Unit.KILOBYTE,
-                DataSize.Unit.MEGABYTE,
-                DataSize.Unit.GIGABYTE,
-            ],
+        def sorted_units() -> list["DataSize.Unit"]:
+            return sorted(
+                [
+                    DataSize.Unit.BYTE,
+                    DataSize.Unit.KILOBYTE,
+                    DataSize.Unit.MEGABYTE,
+                    DataSize.Unit.GIGABYTE,
+                ],
                 key=lambda u: u.size,
-                reverse=True)
+                reverse=True,
+            )
 
         @staticmethod
-        def for_value(value: int) -> 'DataSize.Unit':
+        def for_value(value: int) -> "DataSize.Unit":
             for unit in DataSize.Unit.sorted_units():
                 if value >= unit.size:
                     return unit
@@ -66,18 +68,18 @@ class DataSize:
         self.__bytes += bytes_
 
     @classmethod
-    def __from_unit(cls, size: float, unit: Unit) -> 'DataSize':
+    def __from_unit(cls, size: float, unit: Unit) -> "DataSize":
         return DataSize(round(size * unit.size))
 
     @classmethod
-    def from_bytes(cls, size: int) -> 'DataSize':
+    def from_bytes(cls, size: int) -> "DataSize":
         return DataSize.__from_unit(size, DataSize.Unit.BYTE)
 
     @overload
-    def __truediv__(self, other: timedelta) -> 'DataSpeed': ...
+    def __truediv__(self, other: timedelta) -> "DataSpeed": ...
     @overload
-    def __truediv__(self, other: 'DataSpeed') -> timedelta | None: ...
-    def __truediv__(self, other: 'timedelta | DataSpeed') -> 'DataSpeed | timedelta | None':
+    def __truediv__(self, other: "DataSpeed") -> timedelta | None: ...
+    def __truediv__(self, other: "timedelta | DataSpeed") -> "DataSpeed | timedelta | None":
         if isinstance(other, timedelta):
             return DataSpeed(self, other)
         elif isinstance(other, DataSpeed):
@@ -92,15 +94,15 @@ class DataSize:
 
             return timedelta(seconds=time_in_seconds)
         else:
-            assert False
+            raise AssertionError
 
-    def __sub__(self, other: 'DataSize') -> 'DataSize':
+    def __sub__(self, other: "DataSize") -> "DataSize":
         if isinstance(other, DataSize):
             return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
         else:
-            assert False
+            raise AssertionError
 
-    def __lt__(self, other: Union['DataSize', int]) -> bool:
+    def __lt__(self, other: Union["DataSize", int]) -> bool:
         if isinstance(other, DataSize):
             other = other.__bytes
 

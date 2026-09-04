@@ -66,6 +66,7 @@ def open_file_manager(path: Path) -> None:
 
 # region determining drives
 
+
 def __get_unix_mount(path: Path) -> Path:
     while True:
         if path.is_mount():
@@ -90,12 +91,13 @@ def __get_mount(path: Path) -> Path:
     elif system_name == "Windows":
         return __get_windows_mount(path)
     else:
-        assert False
+        raise AssertionError
 
 
 # endregion
 
 # region generic operations
+
 
 def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, Path], None], action_name: str) -> None:
     assert src_path.is_dir()
@@ -124,8 +126,9 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 
         current_speed = speed_meter.current_value
 
-        log_string = f"{action_name} {relative_path} ({index}/{len(files)})" \
-                     f" ({total_copied} / {total_size}) {current_speed}."
+        log_string = (
+            f"{action_name} {relative_path} ({index}/{len(files)}) ({total_copied} / {total_size}) {current_speed}."
+        )
 
         estimated_time = TransferTimeEstimator.estimate(current_speed, total_size - total_copied)
 
@@ -149,6 +152,7 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 # endregion
 
 # region move operations
+
 
 def __move_file(file_path: Path, new_path: Path) -> None:
     assert __get_mount(file_path) != __get_mount(new_path)
@@ -188,12 +192,13 @@ def move(src_path: Path, dst_path: Path) -> None:
     elif src_path.is_file():
         __move_file(src_path, new_file_path)
     else:
-        assert False
+        raise AssertionError
 
 
 # endregion
 
 # region copy operations
+
 
 def __copy_file(file_path: Path, new_path: Path) -> None:
     new_path = new_path.resolve()
@@ -222,12 +227,13 @@ def copy(src_path: Path, dst_path: Path) -> None:
     elif src_path.is_dir():
         __copy_tree(src_path, new_item_path)
     else:
-        assert False
+        raise AssertionError
 
 
 # endregion
 
 # region remove operations
+
 
 def __remove_file(file_path: Path) -> None:
     file_path.unlink()
@@ -302,7 +308,6 @@ class PathBased(Movable):
 
 
 class File(PathBased):
-
     @property
     def name(self) -> str:
         return self.path.name
@@ -353,10 +358,13 @@ class File(PathBased):
 
 
 class Folder(PathBased):
-    __FILES_TO_UNLINK: ClassVar[list[str]] = [name.lower() for name in [
-        ".DS_store",
-        "NC_FLLST.DAT",
-    ]]
+    __FILES_TO_UNLINK: ClassVar[list[str]] = [
+        name.lower()
+        for name in [
+            ".DS_store",
+            "NC_FLLST.DAT",
+        ]
+    ]
 
     # noinspection PyTypeChecker
     def __init__(self, path: Path) -> None:
@@ -391,8 +399,7 @@ class Folder(PathBased):
 
     @property
     def total_size(self) -> int:
-        return sum(file.size for file in self.files) + \
-            sum(subfolder.total_size for subfolder in self.subfolders)
+        return sum(file.size for file in self.files) + sum(subfolder.total_size for subfolder in self.subfolders)
 
     @property
     def subfolders(self) -> list[Self]:
@@ -489,7 +496,7 @@ class Folder(PathBased):
                     try:
                         child_tree.remove()
                     except Exception:  # noqa: BLE001
-                        print(f"Failed to remove empty tree: \"{child_tree}\"")
+                        print(f'Failed to remove empty tree: "{child_tree}"')
 
                         self.__subfolders[child.name] = child_tree
 
@@ -524,7 +531,7 @@ class Folder(PathBased):
         elif new_path.is_dir():
             self.merge_into(new_path)
         else:
-            assert False
+            raise AssertionError
 
         self.refresh()
 
@@ -607,13 +614,12 @@ def parse_paths(paths: list[Path]) -> list[PathBased]:
         elif path.is_dir():
             result.append(Folder(path))
         else:
-            assert False
+            raise AssertionError
 
     return result
 
 
 class RelativeFileset(Movable):
-
     def __init__(self, root: Path, files: Iterable[PathBased]) -> None:
         super().__init__()
 
