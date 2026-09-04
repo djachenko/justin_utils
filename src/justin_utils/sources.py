@@ -68,7 +68,7 @@ class InternalMetadataSource(Source):
         ".heic",
     ]
 
-    def __init__(self, file: File):
+    def __init__(self, file: File) -> None:
         super().__init__()
 
         self.__file = file
@@ -100,7 +100,7 @@ class ExternalMetadataSource(Source):
         ".xmp",
     ]
 
-    def __init__(self, raw: File, metadata: File | None):
+    def __init__(self, raw: File, metadata: File | None) -> None:
         super().__init__()
 
         assert raw.extension != ".jpg"
@@ -136,18 +136,16 @@ class ExternalMetadataSource(Source):
 
 
 def parse_sources(seq: Iterable[File]) -> list[Source]:
-    split = list(util.split_by_predicates(
-        seq,
-        lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,
-        lambda file: file.extension.lower() in ExternalMetadataSource.METADATA_TYPES,
-        lambda file: file.extension.lower() in InternalMetadataSource.TYPES
-    ))
-
-    join = joins.left(
-        split[0],
-        split[1],
-        lambda raw, xmp: raw.stem == xmp.stem
+    split = list(
+        util.split_by_predicates(
+            seq,
+            lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,
+            lambda file: file.extension.lower() in ExternalMetadataSource.METADATA_TYPES,
+            lambda file: file.extension.lower() in InternalMetadataSource.TYPES,
+        )
     )
+
+    join = joins.left(split[0], split[1], lambda raw, xmp: raw.stem == xmp.stem)
 
     raws = [ExternalMetadataSource(raw, meta) for raw, meta in join]
     jpegs = [InternalMetadataSource(jpeg) for jpeg in split[2]]

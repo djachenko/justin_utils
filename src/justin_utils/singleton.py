@@ -2,10 +2,10 @@ from abc import ABC
 from functools import cache
 from typing import Self, TypeVar
 
-T = TypeVar('T', bound='Singleton')
+T = TypeVar("T", bound="Singleton")
 
 
-class Singleton(ABC):
+class Singleton(ABC):  # noqa: B024 ABC marks intent to subclass, not an abstract interface
     __initiating_from_instance = False
 
     def __init__(self) -> None:
