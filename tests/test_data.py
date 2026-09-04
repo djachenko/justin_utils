@@ -6,29 +6,35 @@ from justin_utils.data import DataSize, DataSpeed
 
 
 class TestDataSizeUnitForValue:
-    @pytest.mark.parametrize("value, expected_unit", [
-        (0, DataSize.Unit.BYTE),
-        (1, DataSize.Unit.BYTE),
-        (1024, DataSize.Unit.KILOBYTE),
-        (1025, DataSize.Unit.KILOBYTE),
-        (2 ** 20, DataSize.Unit.MEGABYTE),
-        (2 ** 20 + 1, DataSize.Unit.MEGABYTE),
-        (2 ** 30, DataSize.Unit.GIGABYTE),
-        (2 ** 30 + 1, DataSize.Unit.GIGABYTE),
-    ])
+    @pytest.mark.parametrize(
+        "value, expected_unit",
+        [
+            (0, DataSize.Unit.BYTE),
+            (1, DataSize.Unit.BYTE),
+            (1024, DataSize.Unit.KILOBYTE),
+            (1025, DataSize.Unit.KILOBYTE),
+            (2**20, DataSize.Unit.MEGABYTE),
+            (2**20 + 1, DataSize.Unit.MEGABYTE),
+            (2**30, DataSize.Unit.GIGABYTE),
+            (2**30 + 1, DataSize.Unit.GIGABYTE),
+        ],
+    )
     def test_for_value(self, value, expected_unit):
         assert DataSize.Unit.for_value(value) == expected_unit
 
 
 class TestDataSizeFormatted:
-    @pytest.mark.parametrize("size_in_bytes, expected", [
-        (0, "0.00 B"),
-        (512, "512.00 B"),
-        (1025, "1.00 KB"),
-        (2 ** 20 + 1, "1.00 MB"),
-        (2 ** 30 + 1, "1.00 GB"),
-        (int(1.5 * 2 ** 20) + 1, "1.50 MB"),
-    ])
+    @pytest.mark.parametrize(
+        "size_in_bytes, expected",
+        [
+            (0, "0.00 B"),
+            (512, "512.00 B"),
+            (1025, "1.00 KB"),
+            (2**20 + 1, "1.00 MB"),
+            (2**30 + 1, "1.00 GB"),
+            (int(1.5 * 2**20) + 1, "1.50 MB"),
+        ],
+    )
     def test_formatted(self, size_in_bytes, expected):
         assert DataSize(size_in_bytes).formatted() == expected
 
@@ -73,12 +79,15 @@ class TestDataSizeArithmetic:
         with pytest.raises(AssertionError):
             DataSize(1024) / 2
 
-    @pytest.mark.parametrize("other, expected", [
-        (DataSize(2048), True),
-        (DataSize(512), False),
-        (2048, True),
-        (512, False),
-    ])
+    @pytest.mark.parametrize(
+        "other, expected",
+        [
+            (DataSize(2048), True),
+            (DataSize(512), False),
+            (2048, True),
+            (512, False),
+        ],
+    )
     def test_lt(self, other, expected):
         assert (DataSize(1024) < other) == expected
 
@@ -109,10 +118,13 @@ class TestDataSpeed:
 
         assert str(speed) == speed.formatted()
 
-    @pytest.mark.parametrize("amount, time", [
-        (1024, timedelta(seconds=1)),
-        (DataSize(1024), 1),
-    ])
+    @pytest.mark.parametrize(
+        "amount, time",
+        [
+            (1024, timedelta(seconds=1)),
+            (DataSize(1024), 1),
+        ],
+    )
     def test_invalid_constructor_args_raises(self, amount, time):
         with pytest.raises(AssertionError):
             DataSpeed(amount, time)

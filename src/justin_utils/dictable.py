@@ -113,7 +113,12 @@ def fromdict(obj: Json, data_class: type[V], rules: Rules | None = None) -> V:
 
             log.warning(
                 "%s.%s: не удалось привести %r к %s (%s), дефолт %r",
-                name, field.name, obj[field.name], field_type, e, fallback,
+                name,
+                field.name,
+                obj[field.name],
+                field_type,
+                e,
+                fallback,
             )
 
     return data_class(**result)

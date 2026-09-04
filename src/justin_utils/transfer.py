@@ -37,7 +37,7 @@ class TransferSpeedMeter:
         self.__history.append((now, size))
         self.__history_start_time = self.__history[0][0]
 
-        self.__history = self.__history[-TransferSpeedMeter.__HISTORY_SIZE:]
+        self.__history = self.__history[-TransferSpeedMeter.__HISTORY_SIZE :]
 
     @property
     def current_value(self) -> DataSpeed:

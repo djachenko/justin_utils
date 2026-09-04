@@ -21,11 +21,14 @@ class TestConstruction:
 
 
 class TestFilter:
-    @pytest.mark.parametrize("items, predicate, expected", [
-        ([1, 2, 3, 4], lambda x: x % 2 == 0, [2, 4]),
-        ([1, 2, 3], lambda x: x > 10, []),
-        ([], lambda x: True, []),
-    ])
+    @pytest.mark.parametrize(
+        "items, predicate, expected",
+        [
+            ([1, 2, 3, 4], lambda x: x % 2 == 0, [2, 4]),
+            ([1, 2, 3], lambda x: x > 10, []),
+            ([], lambda x: True, []),
+        ],
+    )
     def test_filter(self, items, predicate, expected):
         result = Sequence.with_sequence(items).filter(predicate).to_list()
 
@@ -33,11 +36,14 @@ class TestFilter:
 
 
 class TestMap:
-    @pytest.mark.parametrize("items, modifier, expected", [
-        ([1, 2, 3], lambda x: x * 2, [2, 4, 6]),
-        ([1, 2, 3], str, ["1", "2", "3"]),
-        ([], lambda x: x, []),
-    ])
+    @pytest.mark.parametrize(
+        "items, modifier, expected",
+        [
+            ([1, 2, 3], lambda x: x * 2, [2, 4, 6]),
+            ([1, 2, 3], str, ["1", "2", "3"]),
+            ([], lambda x: x, []),
+        ],
+    )
     def test_map(self, items, modifier, expected):
         result = Sequence.with_sequence(items).map(modifier).to_list()
 
@@ -57,28 +63,37 @@ class TestFlatMap:
 
 
 class TestTakeSkip:
-    @pytest.mark.parametrize("count, expected", [
-        (0, []),
-        (2, [1, 2]),
-        (10, [1, 2, 3, 4]),
-    ])
+    @pytest.mark.parametrize(
+        "count, expected",
+        [
+            (0, []),
+            (2, [1, 2]),
+            (10, [1, 2, 3, 4]),
+        ],
+    )
     def test_take(self, count, expected):
         assert Sequence.with_sequence([1, 2, 3, 4]).take(count).to_list() == expected
 
-    @pytest.mark.parametrize("count, expected", [
-        (0, [1, 2, 3, 4]),
-        (2, [3, 4]),
-        (10, []),
-    ])
+    @pytest.mark.parametrize(
+        "count, expected",
+        [
+            (0, [1, 2, 3, 4]),
+            (2, [3, 4]),
+            (10, []),
+        ],
+    )
     def test_skip(self, count, expected):
         assert Sequence.with_sequence([1, 2, 3, 4]).skip(count).to_list() == expected
 
 
 class TestNotNull:
-    @pytest.mark.parametrize("items, key, expected", [
-        ([1, None, 2, None], None, [1, 2]),
-        ([{"v": 1}, {"v": None}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
-    ])
+    @pytest.mark.parametrize(
+        "items, key, expected",
+        [
+            ([1, None, 2, None], None, [1, 2]),
+            ([{"v": 1}, {"v": None}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
+        ],
+    )
     def test_not_null(self, items, key, expected):
         seq = Sequence.with_sequence(items)
 
@@ -100,11 +115,14 @@ class TestAppendAdd:
 
 
 class TestSumReduce:
-    @pytest.mark.parametrize("items, key, expected", [
-        ([1, 2, 3], None, 6),
-        ([{"v": 1}, {"v": 2}], lambda x: x["v"], 3),
-        ([], None, 0),
-    ])
+    @pytest.mark.parametrize(
+        "items, key, expected",
+        [
+            ([1, 2, 3], None, 6),
+            ([{"v": 1}, {"v": 2}], lambda x: x["v"], 3),
+            ([], None, 0),
+        ],
+    )
     def test_sum(self, items, key, expected):
         seq = Sequence.with_sequence(items)
 
@@ -130,10 +148,13 @@ class TestGroupBy:
 
 
 class TestDistinct:
-    @pytest.mark.parametrize("items, key, expected", [
-        ([1, 2, 2, 3, 1], None, [1, 2, 3]),
-        ([{"v": 1}, {"v": 1}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
-    ])
+    @pytest.mark.parametrize(
+        "items, key, expected",
+        [
+            ([1, 2, 2, 3, 1], None, [1, 2, 3]),
+            ([{"v": 1}, {"v": 1}, {"v": 2}], lambda x: x["v"], [{"v": 1}, {"v": 2}]),
+        ],
+    )
     def test_distinct(self, items, key, expected):
         seq = Sequence.with_sequence(items)
 
@@ -141,11 +162,14 @@ class TestDistinct:
 
         assert result == expected
 
-    @pytest.mark.parametrize("items, expected", [
-        ([1, 2, 3], True),
-        ([1, 2, 2], False),
-        ([], True),
-    ])
+    @pytest.mark.parametrize(
+        "items, expected",
+        [
+            ([1, 2, 3], True),
+            ([1, 2, 2], False),
+            ([], True),
+        ],
+    )
     def test_is_distinct(self, items, expected):
         assert Sequence.with_sequence(items).is_distinct() == expected
 
@@ -168,17 +192,23 @@ class TestCache:
 
 
 class TestMinMax:
-    @pytest.mark.parametrize("items, expected", [
-        ([3, 1, 2], 3),
-        ([], None),
-    ])
+    @pytest.mark.parametrize(
+        "items, expected",
+        [
+            ([3, 1, 2], 3),
+            ([], None),
+        ],
+    )
     def test_max(self, items, expected):
         assert Sequence.with_sequence(items).max() == expected
 
-    @pytest.mark.parametrize("items, expected", [
-        ([3, 1, 2], 1),
-        ([], None),
-    ])
+    @pytest.mark.parametrize(
+        "items, expected",
+        [
+            ([3, 1, 2], 1),
+            ([], None),
+        ],
+    )
     def test_min(self, items, expected):
         assert Sequence.with_sequence(items).min() == expected
 
@@ -197,10 +227,13 @@ class TestConversions:
     def test_to_set(self):
         assert Sequence.with_sequence([1, 1, 2]).to_set() == {1, 2}
 
-    @pytest.mark.parametrize("items, generator, expected", [
-        ([(1, "a"), (2, "b")], None, {1: "a", 2: "b"}),
-        ([1, 2], lambda x: (x, x * 2), {1: 2, 2: 4}),
-    ])
+    @pytest.mark.parametrize(
+        "items, generator, expected",
+        [
+            ([(1, "a"), (2, "b")], None, {1: "a", 2: "b"}),
+            ([1, 2], lambda x: (x, x * 2), {1: 2, 2: 4}),
+        ],
+    )
     def test_to_dict(self, items, generator, expected):
         seq = Sequence.with_sequence(items)
 
@@ -219,13 +252,16 @@ class TestEach:
 
 
 class TestAny:
-    @pytest.mark.parametrize("items, predicate, expected", [
-        ([0, 0, 1], None, True),
-        ([0, 0, 0], None, False),
-        ([], None, False),
-        ([1, 2, 3], lambda x: x > 2, True),
-        ([1, 2, 3], lambda x: x > 10, False),
-    ])
+    @pytest.mark.parametrize(
+        "items, predicate, expected",
+        [
+            ([0, 0, 1], None, True),
+            ([0, 0, 0], None, False),
+            ([], None, False),
+            ([1, 2, 3], lambda x: x > 2, True),
+            ([1, 2, 3], lambda x: x > 10, False),
+        ],
+    )
     def test_any(self, items, predicate, expected):
         seq = Sequence.with_sequence(items)
 
@@ -235,10 +271,13 @@ class TestAny:
 
 
 class TestSame:
-    @pytest.mark.parametrize("items, expected", [
-        ([1, 1, 1], True),
-        ([1, 2], False),
-        ([1], True),
-    ])
+    @pytest.mark.parametrize(
+        "items, expected",
+        [
+            ([1, 1, 1], True),
+            ([1, 2], False),
+            ([1], True),
+        ],
+    )
     def test_same(self, items, expected):
         assert Sequence.with_sequence(items).same() == expected

@@ -59,7 +59,7 @@ class Exif:
 
         self.date_taken = date_taken
 
-    def __lt__(self, other: 'Exif') -> bool:
+    def __lt__(self, other: "Exif") -> bool:
         return self.date_taken < other.date_taken
 
     @classmethod
@@ -78,10 +78,7 @@ class Exif:
 
     @classmethod
     def __from_image(cls, image: PilImage) -> Self | None:
-        date_string = image \
-            .getexif() \
-            .get_ifd(IFD.Exif) \
-            .get(Base.DateTimeOriginal)
+        date_string = image.getexif().get_ifd(IFD.Exif).get(Base.DateTimeOriginal)
 
         if date_string is None:
             return None
@@ -110,7 +107,7 @@ def exif_sorted(seq: Iterable[Path]) -> Iterable[Path]:
             self.exif = parse_exif(path)
             self.name = path.name
 
-        def __lt__(self, other: 'Comparator') -> bool:
+        def __lt__(self, other: "Comparator") -> bool:
             if other.exif and self.exif:
                 return self.exif.date_taken < other.exif.date_taken
 

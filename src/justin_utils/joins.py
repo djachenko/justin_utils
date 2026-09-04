@@ -8,6 +8,7 @@ V = TypeVar("V")
 
 # todo: rewrite in lazy way
 
+
 def full_outer(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> list[tuple[T, V]]:
     sequences = [seq1, seq2]
 

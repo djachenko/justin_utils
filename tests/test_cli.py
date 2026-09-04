@@ -21,12 +21,15 @@ class _RecordingAction(Action):
 
 
 class TestParameter:
-    @pytest.mark.parametrize("name, flags, expected", [
-        ("root", None, ("root",)),
-        (None, ["-w", "--width"], ("-w", "--width")),
-        ("root", ["-r"], ("root", "-r")),
-        (None, None, ()),
-    ])
+    @pytest.mark.parametrize(
+        "name, flags, expected",
+        [
+            ("root", None, ("root",)),
+            (None, ["-w", "--width"], ("-w", "--width")),
+            ("root", ["-r"], ("root", "-r")),
+            (None, None, ()),
+        ],
+    )
     def test_name_or_flags(self, name, flags, expected):
         parameter = Parameter(name=name, flags=flags)
 
@@ -55,10 +58,13 @@ class TestParameter:
 
 
 class TestCommand:
-    @pytest.mark.parametrize("allowed_same_parameters, raises", [
-        ((), True),
-        (["root"], False),
-    ])
+    @pytest.mark.parametrize(
+        "allowed_same_parameters, raises",
+        [
+            ((), True),
+            (["root"], False),
+        ],
+    )
     def test_duplicate_parameter_names(self, allowed_same_parameters, raises):
         action1 = _RecordingAction([Parameter(name="root")])
         action2 = _RecordingAction([Parameter(name="root")])
@@ -92,10 +98,12 @@ class TestCommand:
 class TestApp:
     def test_duplicate_command_names_raises(self):
         with pytest.raises(AssertionError):
-            App([
-                Command("cmd", [_RecordingAction()]),
-                Command("cmd", [_RecordingAction()]),
-            ])
+            App(
+                [
+                    Command("cmd", [_RecordingAction()]),
+                    Command("cmd", [_RecordingAction()]),
+                ]
+            )
 
     def test_run_dispatches_to_matching_command(self):
         action = _RecordingAction([Parameter(name="value", type=int)])
