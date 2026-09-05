@@ -91,13 +91,10 @@ class TestScalars:
 
         assert node.count == 7
 
-    @pytest.mark.parametrize(
-        "payload, expected",
-        [
-            ({"name": "a"}, "a"),
-            ({"name": 1}, "1"),
-        ],
-    )
+    @pytest.mark.parametrize("payload, expected", [
+        ({"name": "a"}, "a"),
+        ({"name": 1}, "1"),
+    ])
     def test_scalar_coercion(self, payload, expected):
         assert Leaf.from_dict(payload).name == expected
 
