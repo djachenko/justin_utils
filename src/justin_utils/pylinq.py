@@ -51,15 +51,15 @@ class Sequence(Iterable[Element]):
                 yield self.__modifier(i)
 
     @classmethod
-    def empty(cls) -> Sequence:
-        return Sequence()
+    def empty(cls) -> Self:
+        return cls()
 
     @classmethod
-    def with_sequence(cls, sequence: Iterable[Element]) -> Sequence[Element]:
-        return Sequence(sequence)
+    def with_sequence(cls, sequence: Iterable[Element]) -> Self:
+        return cls(sequence)
 
     @classmethod
-    def with_single(cls, element: Element) -> Sequence[Element]:
+    def with_single(cls, element: Element) -> Self:
         return cls.with_sequence([element])
 
     @classmethod
