@@ -496,7 +496,7 @@ class Folder(PathBased):
                     try:
                         child_tree.remove()
                     except Exception:  # noqa: BLE001
-                        print(f'Failed to remove empty tree: "{child_tree}"')
+                        print(f"Failed to remove empty tree: \"{child_tree}\"")
 
                         self.__subfolders[child.name] = child_tree
 

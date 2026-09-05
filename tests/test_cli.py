@@ -102,7 +102,7 @@ class TestApp:
                 [
                     Command("cmd", [_RecordingAction()]),
                     Command("cmd", [_RecordingAction()]),
-                ]
+                ],
             )
 
     def test_run_dispatches_to_matching_command(self):

@@ -85,6 +85,7 @@ select = [
     "UP",   # pyupgrade
     "B",    # bugbear
     "C4",   # comprehensions
+    "COM",  # trailing commas pin the exploded layout
     "DTZ",  # naive datetime
     "BLE",  # blind except
     "ANN",  # annotations
@@ -95,6 +96,9 @@ ignore = [
     "C416",    # explicit comprehension reads better than a dict() cast
     "C420",    # explicit comprehension reads better than dict.fromkeys
 ]
+
+[tool.ruff.format]
+quote-style = "preserve"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]

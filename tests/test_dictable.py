@@ -66,7 +66,7 @@ class TestNested:
                 "title": "t",
                 "leaf": {"name": "l"},
                 "leaves": [{"name": "one"}, {"name": "two"}],
-            }
+            },
         )
 
         assert [leaf.name for leaf in node.leaves] == ["one", "two"]

@@ -33,7 +33,11 @@ class Part:
         else:
             name = None
 
-        return Part(index=index, name=name, path=path)
+        return Part(
+            index=index,
+            name=name,
+            path=path,
+        )
 
     @staticmethod
     def is_part(path: Path) -> bool:
@@ -89,7 +93,10 @@ def to_padded_string(number: int, length: int, padding: str) -> str:
 
 
 def new_part_name(part: Part, new_index: int, max_index_length: int) -> str:
-    new_name_parts = [to_padded_string(new_index, max_index_length, "0"), part.name]
+    new_name_parts = [
+        to_padded_string(new_index, max_index_length, "0"),
+        part.name,
+    ]
 
     name_parts = [i for i in new_name_parts if i is not None]
     new_name = SEPARATOR.join(name_parts)

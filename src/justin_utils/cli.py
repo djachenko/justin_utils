@@ -19,7 +19,7 @@ T = TypeVar("T")
 
 
 @deprecated(
-    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it"
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
 )
 @dataclass
 class Parameter:
@@ -59,7 +59,7 @@ class Parameter:
 
 
 @deprecated(
-    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it"
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
 )
 class Action(ABC):
     def configure_subparser(self, subparser: ArgumentParser) -> None:  # noqa: B027 optional hook
@@ -75,7 +75,7 @@ class Action(ABC):
 
 
 @deprecated(
-    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it"
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
 )
 class Command:
     def __init__(self, name: str, actions: Iterable[Action], allowed_same_parameters: Iterable[str] = ()) -> None:
@@ -131,7 +131,7 @@ class Command:
 
 
 @deprecated(
-    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it"
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
 )
 class App:
     def __init__(self, commands: Iterable[Command], context: Context = None) -> None:

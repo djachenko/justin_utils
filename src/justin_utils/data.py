@@ -19,7 +19,7 @@ class DataSize:
 
         @staticmethod
         @cache
-        def sorted_units() -> list["DataSize.Unit"]:
+        def sorted_units() -> list['DataSize.Unit']:
             return sorted(
                 [
                     DataSize.Unit.BYTE,
@@ -32,7 +32,7 @@ class DataSize:
             )
 
         @staticmethod
-        def for_value(value: int) -> "DataSize.Unit":
+        def for_value(value: int) -> 'DataSize.Unit':
             for unit in DataSize.Unit.sorted_units():
                 if value >= unit.size:
                     return unit
@@ -68,18 +68,18 @@ class DataSize:
         self.__bytes += bytes_
 
     @classmethod
-    def __from_unit(cls, size: float, unit: Unit) -> "DataSize":
+    def __from_unit(cls, size: float, unit: Unit) -> 'DataSize':
         return DataSize(round(size * unit.size))
 
     @classmethod
-    def from_bytes(cls, size: int) -> "DataSize":
+    def from_bytes(cls, size: int) -> 'DataSize':
         return DataSize.__from_unit(size, DataSize.Unit.BYTE)
 
     @overload
-    def __truediv__(self, other: timedelta) -> "DataSpeed": ...
+    def __truediv__(self, other: timedelta) -> 'DataSpeed': ...
     @overload
-    def __truediv__(self, other: "DataSpeed") -> timedelta | None: ...
-    def __truediv__(self, other: "timedelta | DataSpeed") -> "DataSpeed | timedelta | None":
+    def __truediv__(self, other: 'DataSpeed') -> timedelta | None: ...
+    def __truediv__(self, other: 'timedelta | DataSpeed') -> 'DataSpeed | timedelta | None':
         if isinstance(other, timedelta):
             return DataSpeed(self, other)
         elif isinstance(other, DataSpeed):
@@ -96,13 +96,13 @@ class DataSize:
         else:
             raise AssertionError
 
-    def __sub__(self, other: "DataSize") -> "DataSize":
+    def __sub__(self, other: 'DataSize') -> 'DataSize':
         if isinstance(other, DataSize):
             return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
         else:
             raise AssertionError
 
-    def __lt__(self, other: Union["DataSize", int]) -> bool:
+    def __lt__(self, other: Union['DataSize', int]) -> bool:
         if isinstance(other, DataSize):
             other = other.__bytes
 

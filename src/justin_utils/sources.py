@@ -142,10 +142,14 @@ def parse_sources(seq: Iterable[File]) -> list[Source]:
             lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,
             lambda file: file.extension.lower() in ExternalMetadataSource.METADATA_TYPES,
             lambda file: file.extension.lower() in InternalMetadataSource.TYPES,
-        )
+        ),
     )
 
-    join = joins.left(split[0], split[1], lambda raw, xmp: raw.stem == xmp.stem)
+    join = joins.left(
+        split[0],
+        split[1],
+        lambda raw, xmp: raw.stem == xmp.stem,
+    )
 
     raws = [ExternalMetadataSource(raw, meta) for raw, meta in join]
     jpegs = [InternalMetadataSource(jpeg) for jpeg in split[2]]

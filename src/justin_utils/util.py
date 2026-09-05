@@ -34,7 +34,7 @@ def ask_for_choice_flagged(question: str, options: list[str]) -> str | None:
         print(f"{index}: {option}")
 
     print("-: abort")
-    print('"": empty')
+    print("\"\": empty")
 
     answer = input("Enter chosen option: ")
 
