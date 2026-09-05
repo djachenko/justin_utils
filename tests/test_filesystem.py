@@ -17,14 +17,11 @@ def _nested(names: list[str], leaf: FileTree | str) -> FileTree:
 
 
 class TestGetByPath:
-    @pytest.mark.parametrize(
-        "names",
-        [
-            ["a"],
-            ["a", "b"],
-            ["a", "b", "c"],
-        ],
-    )
+    @pytest.mark.parametrize("names", [
+        ["a"],
+        ["a", "b"],
+        ["a", "b", "c"],
+    ])
     def test_existing_path_returns_folder(self, temp_dir, create_files, names):
         create_files(temp_dir, _nested(names, {"file.txt": "x"}))
         folder = Folder(temp_dir)
@@ -34,13 +31,10 @@ class TestGetByPath:
         assert result is not None
         assert result.name == names[-1]
 
-    @pytest.mark.parametrize(
-        "lookup",
-        [
-            "a/nonexistent",
-            "z",
-        ],
-    )
+    @pytest.mark.parametrize("lookup", [
+        "a/nonexistent",
+        "z",
+    ])
     def test_missing_path_returns_none(self, temp_dir, create_files, lookup):
         create_files(temp_dir, {"a": {"file.txt": "x"}})
         folder = Folder(temp_dir)
@@ -51,13 +45,10 @@ class TestGetByPath:
 
 
 class TestMergeInto:
-    @pytest.mark.parametrize(
-        "path_parts",
-        [
-            ("file.txt",),
-            ("sub", "file.txt"),
-        ],
-    )
+    @pytest.mark.parametrize("path_parts", [
+        ("file.txt",),
+        ("sub", "file.txt"),
+    ])
     def test_merge_into_moves_contents(self, temp_dir, create_files, path_parts):
         create_files(temp_dir, {"source": _nested(list(path_parts), "content"), "target": {}})
         source = Folder(temp_dir / "source")

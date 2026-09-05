@@ -81,13 +81,10 @@ class TestFromPath:
         with _source(shooting_exif={36867: "not a date"}):
             assert Exif.from_path(image_path) is None
 
-    @pytest.mark.parametrize(
-        "error",
-        [
-            UnidentifiedImageError("unreadable"),
-            OSError("unreadable"),
-        ],
-    )
+    @pytest.mark.parametrize("error", [
+        UnidentifiedImageError("unreadable"),
+        OSError("unreadable"),
+    ])
     def test_returns_none_when_unreadable(self, image_path, error):
         with patch("justin_utils.exif.ImageModule.open", side_effect=error):
             assert Exif.from_path(image_path) is None

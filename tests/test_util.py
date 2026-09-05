@@ -19,16 +19,13 @@ class TestParseDate:
     def test_4_digit_year(self):
         assert parse_date("15.3.2024") == date(2024, 3, 15)
 
-    @pytest.mark.parametrize(
-        "two_digit_year, expected_year",
-        [
-            (24, 2024),  # year <= today_year % 100 -> 2000s
-            (26, 2026),  # year == today_year % 100 -> 2000s
-            (27, 1927),  # year > today_year % 100 -> 1900s
-            (0, 2000),
-            (99, 1999),
-        ],
-    )
+    @pytest.mark.parametrize("two_digit_year, expected_year", [
+        (24, 2024),  # year <= today_year % 100 -> 2000s
+        (26, 2026),  # year == today_year % 100 -> 2000s
+        (27, 1927),  # year > today_year % 100 -> 1900s
+        (0, 2000),
+        (99, 1999),
+    ])
     def test_2_digit_year(self, two_digit_year, expected_year):
         with patch("justin_utils.util.date") as mock_date:
             mock_date.today.return_value = date(2026, 6, 27)

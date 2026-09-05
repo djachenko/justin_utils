@@ -22,10 +22,10 @@ def identity(x: T) -> T:
 
 class Sequence(Iterable[Element]):
     def __init__(
-        self,
-        base: Iterable[Element] | None = None,
-        predicate: Callable[[Element], bool] = lambda _: True,
-        modifier: Callable[[Element], Result] = identity,
+            self,
+            base: Iterable[Element] | None = None,
+            predicate: Callable[[Element], bool] = lambda _: True,
+            modifier: Callable[[Element], Result] = identity,
     ) -> None:
         super().__init__()
 
@@ -112,7 +112,8 @@ class Sequence(Iterable[Element]):
 
         result = self.reduce(defaultdict(list), reducer)
 
-        return Sequence(result.items()).map(lambda e: (e[0], Sequence(e[1])))
+        return Sequence(result.items()) \
+            .map(lambda e: (e[0], Sequence(e[1])))
 
     def distinct(self, key: Callable[[Element], Hashable] = identity) -> 'Sequence[Element]':
         hashes = set()

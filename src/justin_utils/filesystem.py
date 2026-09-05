@@ -66,7 +66,6 @@ def open_file_manager(path: Path) -> None:
 
 # region determining drives
 
-
 def __get_unix_mount(path: Path) -> Path:
     while True:
         if path.is_mount():
@@ -98,7 +97,6 @@ def __get_mount(path: Path) -> Path:
 
 # region generic operations
 
-
 def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, Path], None], action_name: str) -> None:
     assert src_path.is_dir()
 
@@ -126,9 +124,8 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 
         current_speed = speed_meter.current_value
 
-        log_string = (
-            f"{action_name} {relative_path} ({index}/{len(files)}) ({total_copied} / {total_size}) {current_speed}."
-        )
+        log_string = f"{action_name} {relative_path} ({index}/{len(files)})" \
+                     f" ({total_copied} / {total_size}) {current_speed}."
 
         estimated_time = TransferTimeEstimator.estimate(current_speed, total_size - total_copied)
 
@@ -152,7 +149,6 @@ def __handle_tree(src_path: Path, dst_path: Path, file_handler: Callable[[Path, 
 # endregion
 
 # region move operations
-
 
 def __move_file(file_path: Path, new_path: Path) -> None:
     assert __get_mount(file_path) != __get_mount(new_path)
@@ -199,7 +195,6 @@ def move(src_path: Path, dst_path: Path) -> None:
 
 # region copy operations
 
-
 def __copy_file(file_path: Path, new_path: Path) -> None:
     new_path = new_path.resolve()
 
@@ -233,7 +228,6 @@ def copy(src_path: Path, dst_path: Path) -> None:
 # endregion
 
 # region remove operations
-
 
 def __remove_file(file_path: Path) -> None:
     file_path.unlink()
@@ -308,6 +302,7 @@ class PathBased(Movable):
 
 
 class File(PathBased):
+
     @property
     def name(self) -> str:
         return self.path.name
@@ -358,13 +353,10 @@ class File(PathBased):
 
 
 class Folder(PathBased):
-    __FILES_TO_UNLINK: ClassVar[list[str]] = [
-        name.lower()
-        for name in [
-            ".DS_store",
-            "NC_FLLST.DAT",
-        ]
-    ]
+    __FILES_TO_UNLINK: ClassVar[list[str]] = [name.lower() for name in [
+        ".DS_store",
+        "NC_FLLST.DAT",
+    ]]
 
     # noinspection PyTypeChecker
     def __init__(self, path: Path) -> None:
@@ -399,7 +391,8 @@ class Folder(PathBased):
 
     @property
     def total_size(self) -> int:
-        return sum(file.size for file in self.files) + sum(subfolder.total_size for subfolder in self.subfolders)
+        return sum(file.size for file in self.files) + \
+            sum(subfolder.total_size for subfolder in self.subfolders)
 
     @property
     def subfolders(self) -> list[Self]:
@@ -620,6 +613,7 @@ def parse_paths(paths: list[Path]) -> list[PathBased]:
 
 
 class RelativeFileset(Movable):
+
     def __init__(self, root: Path, files: Iterable[PathBased]) -> None:
         super().__init__()
 

@@ -15,13 +15,10 @@ def _run(monkeypatch: pytest.MonkeyPatch, argv: list[str]) -> None:
 
 
 class TestRun:
-    @pytest.mark.parametrize(
-        "argv_pattern, b_log_moved",
-        [
-            ([], True),  # default pattern "*" matches everything
-            (["*.txt"], False),
-        ],
-    )
+    @pytest.mark.parametrize("argv_pattern, b_log_moved", [
+        ([], True),  # default pattern "*" matches everything
+        (["*.txt"], False),
+    ])
     def test_moves_matching_files(self, temp_dir, monkeypatch, argv_pattern, b_log_moved):
         (temp_dir / "a.txt").touch()
         (temp_dir / "b.log").touch()

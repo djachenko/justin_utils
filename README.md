@@ -25,11 +25,17 @@ For development:
 pip install -e ".[test]"
 ```
 
-Linting, formatting and tests:
+Linting and tests:
 
 ```bash
 ruff check .
-ruff format .
+pytest
+```
+
+Linting and tests:
+
+```bash
+ruff check .
 pytest
 ```
 

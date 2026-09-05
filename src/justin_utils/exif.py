@@ -83,7 +83,10 @@ class Exif:
 
     @classmethod
     def __from_image(cls, image: PilImage) -> Self | None:
-        date_string = image.getexif().get_ifd(IFD.Exif).get(Base.DateTimeOriginal)
+        date_string = image \
+            .getexif() \
+            .get_ifd(IFD.Exif) \
+            .get(Base.DateTimeOriginal)
 
         if date_string is None:
             return None

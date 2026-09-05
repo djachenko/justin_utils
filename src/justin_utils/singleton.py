@@ -1,10 +1,11 @@
+from abc import ABC
 from functools import cache
 from typing import Self, TypeVar
 
 T = TypeVar('T', bound='Singleton')
 
 
-class Singleton:
+class Singleton(ABC):  # noqa: B024 ABC declares a base class, the assert blocks direct use
     __initiating_from_instance = False
 
     def __init__(self) -> None:

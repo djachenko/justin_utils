@@ -19,53 +19,41 @@ runner = CliRunner()
 
 
 class TestPaddedString:
-    @pytest.mark.parametrize(
-        "number, length, expected",
-        [
-            (3, 3, "003"),
-            (123, 2, "123"),
-            (1, 1, "1"),
-            (100, 3, "100"),
-        ],
-    )
+    @pytest.mark.parametrize("number, length, expected", [
+        (3, 3, "003"),
+        (123, 2, "123"),
+        (1, 1, "1"),
+        (100, 3, "100"),
+    ])
     def test_to_padded_string(self, number, length, expected):
         assert to_padded_string(number, length, "0") == expected
 
 
 class TestIndexLength:
-    @pytest.mark.parametrize(
-        "index, expected",
-        [
-            (0, 1),
-            (9, 1),
-            (10, 2),
-            (100, 3),
-        ],
-    )
+    @pytest.mark.parametrize("index, expected", [
+        (0, 1),
+        (9, 1),
+        (10, 2),
+        (100, 3),
+    ])
     def test_index_length(self, index, expected):
         assert index_length(index) == expected
 
 
 class TestPartIsPart:
-    @pytest.mark.parametrize(
-        "name, expected",
-        [
-            ("3.name", True),
-            ("name", False),
-        ],
-    )
+    @pytest.mark.parametrize("name, expected", [
+        ("3.name", True),
+        ("name", False),
+    ])
     def test_is_part(self, name, expected):
         assert Part.is_part(Path(name)) == expected
 
 
 class TestPartFromPath:
-    @pytest.mark.parametrize(
-        "name, expected_index, expected_name",
-        [
-            ("3.intro", 3, "intro"),
-            ("3", 3, None),
-        ],
-    )
+    @pytest.mark.parametrize("name, expected_index, expected_name", [
+        ("3.intro", 3, "intro"),
+        ("3", 3, None),
+    ])
     def test_from_path(self, name, expected_index, expected_name):
         part = Part.from_path(Path(name))
 
@@ -74,13 +62,10 @@ class TestPartFromPath:
 
 
 class TestNewPartName:
-    @pytest.mark.parametrize(
-        "name, expected",
-        [
-            ("intro", "02.intro"),
-            (None, "02"),
-        ],
-    )
+    @pytest.mark.parametrize("name, expected", [
+        ("intro", "02.intro"),
+        (None, "02"),
+    ])
     def test_new_part_name(self, name, expected):
         part = Part(index=1, name=name, path=Path(f"1.{name}" if name else "1"))
 

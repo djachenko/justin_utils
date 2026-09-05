@@ -6,10 +6,10 @@ from typing import Self, Union, overload
 
 class DataSize:
     class Unit(Enum):
-        BYTE = (2**0, "B")
-        KILOBYTE = (2**10, "KB")
-        MEGABYTE = (2**20, "MB")
-        GIGABYTE = (2**30, "GB")
+        BYTE = (2 ** 0, "B")
+        KILOBYTE = (2 ** 10, "KB")
+        MEGABYTE = (2 ** 20, "MB")
+        GIGABYTE = (2 ** 30, "GB")
 
         def __init__(self, size: int, acronym: str) -> None:
             super().__init__()

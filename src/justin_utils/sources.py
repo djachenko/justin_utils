@@ -136,14 +136,12 @@ class ExternalMetadataSource(Source):
 
 
 def parse_sources(seq: Iterable[File]) -> list[Source]:
-    split = list(
-        util.split_by_predicates(
-            seq,
-            lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,
-            lambda file: file.extension.lower() in ExternalMetadataSource.METADATA_TYPES,
-            lambda file: file.extension.lower() in InternalMetadataSource.TYPES,
-        ),
-    )
+    split = list(util.split_by_predicates(
+        seq,
+        lambda file: file.extension.lower() in ExternalMetadataSource.RAW_TYPES,
+        lambda file: file.extension.lower() in ExternalMetadataSource.METADATA_TYPES,
+        lambda file: file.extension.lower() in InternalMetadataSource.TYPES,
+    ))
 
     join = joins.left(
         split[0],

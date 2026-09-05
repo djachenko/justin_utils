@@ -8,15 +8,12 @@ def _eq(a, b) -> bool:
 
 
 class TestInner:
-    @pytest.mark.parametrize(
-        "seq1, seq2, expected",
-        [
-            ([0], [0], [(0, 0)]),
-            ([False], [False], [(False, False)]),
-            ([""], [""], [("", "")]),
-            ([0], [1], []),
-        ],
-    )
+    @pytest.mark.parametrize("seq1, seq2, expected", [
+        ([0], [0], [(0, 0)]),
+        ([False], [False], [(False, False)]),
+        ([""], [""], [("", "")]),
+        ([0], [1], []),
+    ])
     def test_inner_falsy_values(self, seq1, seq2, expected):
         assert list(inner(seq1, seq2, _eq)) == expected
 
@@ -27,15 +24,12 @@ class TestInner:
 
 
 class TestLeft:
-    @pytest.mark.parametrize(
-        "seq1, seq2, expected_pair",
-        [
-            ([0], [1], (0, None)),
-            ([0], [0], (0, 0)),
-            ([""], ["x"], ("", None)),
-            ([False], [False], (False, False)),
-        ],
-    )
+    @pytest.mark.parametrize("seq1, seq2, expected_pair", [
+        ([0], [1], (0, None)),
+        ([0], [0], (0, 0)),
+        ([""], ["x"], ("", None)),
+        ([False], [False], (False, False)),
+    ])
     def test_left_keeps_falsy_values(self, seq1, seq2, expected_pair):
         result = list(left(seq1, seq2, _eq))
 
@@ -43,14 +37,11 @@ class TestLeft:
 
 
 class TestRight:
-    @pytest.mark.parametrize(
-        "seq1, seq2, expected_pair",
-        [
-            ([1], [0], (None, 0)),
-            ([0], [0], (0, 0)),
-            (["x"], [""], (None, "")),
-        ],
-    )
+    @pytest.mark.parametrize("seq1, seq2, expected_pair", [
+        ([1], [0], (None, 0)),
+        ([0], [0], (0, 0)),
+        (["x"], [""], (None, "")),
+    ])
     def test_right_keeps_falsy_values(self, seq1, seq2, expected_pair):
         result = list(right(seq1, seq2, _eq))
 

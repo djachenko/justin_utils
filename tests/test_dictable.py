@@ -61,13 +61,11 @@ class TestNested:
         assert node.tags == ["a", "b"]
 
     def test_list_of_dictables(self):
-        node = Node.from_dict(
-            {
-                "title": "t",
-                "leaf": {"name": "l"},
-                "leaves": [{"name": "one"}, {"name": "two"}],
-            },
-        )
+        node = Node.from_dict({
+            "title": "t",
+            "leaf": {"name": "l"},
+            "leaves": [{"name": "one"}, {"name": "two"}],
+        })
 
         assert [leaf.name for leaf in node.leaves] == ["one", "two"]
         assert all(isinstance(leaf, Leaf) for leaf in node.leaves)
@@ -146,12 +144,9 @@ class TestFromdictFunction:
 
         assert fromdict({"value": "9"}, Plain).value == 9
 
-    @pytest.mark.parametrize(
-        "payload, expected",
-        [
-            ({"name": "a"}, "a"),
-            ({"name": 1}, "1"),
-        ],
-    )
+    @pytest.mark.parametrize("payload, expected", [
+        ({"name": "a"}, "a"),
+        ({"name": 1}, "1"),
+    ])
     def test_scalar_coercion(self, payload, expected):
         assert Leaf.from_dict(payload).name == expected
