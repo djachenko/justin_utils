@@ -100,6 +100,9 @@ ignore = [
 [tool.ruff.format]
 quote-style = "preserve"
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
 
