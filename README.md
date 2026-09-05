@@ -25,6 +25,20 @@ For development:
 pip install -e ".[test]"
 ```
 
+Linting and tests:
+
+```bash
+ruff check .
+pytest
+```
+
+Linting and tests:
+
+```bash
+ruff check .
+pytest
+```
+
 ## CLI tools
 
 Two command-line utilities are installed as entry points:

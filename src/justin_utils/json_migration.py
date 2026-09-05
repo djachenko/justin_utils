@@ -13,7 +13,7 @@ class JsonMigration(ABC):
         pass
 
     @abstractmethod
-    def migrate(self, json_object: JsonObject):
+    def migrate(self, json_object: JsonObject) -> None:
         pass
 
 
@@ -25,14 +25,14 @@ class JsonMigrator(Singleton):
 
         self.__migrations: dict[Version, JsonMigration] = {}
 
-    def register(self, migration: JsonMigration):
+    def register(self, migration: JsonMigration) -> None:
         version = migration.version
 
         assert version not in self.__migrations
 
         self.__migrations[version] = migration
 
-    def migrate(self, json_object: JsonObject):
+    def migrate(self, json_object: JsonObject) -> None:
         if JsonMigrator.__OBJECT_VERSION_KEY in json_object:
             version = json_object[JsonMigrator.__OBJECT_VERSION_KEY]
         else:

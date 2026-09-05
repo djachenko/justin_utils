@@ -16,7 +16,7 @@ Acc = TypeVar("Acc")
 T = TypeVar("T")
 
 
-def identity(x):
+def identity(x: T) -> T:
     return x
 
 
@@ -25,7 +25,7 @@ class Sequence(Iterable[Element]):
             self,
             base: Iterable[Element] | None = None,
             predicate: Callable[[Element], bool] = lambda _: True,
-            modifier: Callable[[Element], Result] = identity
+            modifier: Callable[[Element], Result] = identity,
     ) -> None:
         super().__init__()
 
@@ -64,7 +64,7 @@ class Sequence(Iterable[Element]):
         return Sequence(self, modifier=modifier)
 
     def flat_map(self, modifier: Callable[[Element], Iterable[Result]] = identity) -> 'Sequence[Result]':
-        def generator(seq):
+        def generator(seq: 'Sequence[Element]') -> Iterator[Result]:
             for subsequence in seq.map(modifier):
                 yield from subsequence
 
@@ -74,7 +74,7 @@ class Sequence(Iterable[Element]):
         return Sequence(
             enumerate(self),
             predicate=lambda t: predicate(t[0]),
-            modifier=lambda t: t[1]
+            modifier=lambda t: t[1],
         )
 
     def take(self, count: int) -> 'Sequence[Element]':
@@ -87,7 +87,7 @@ class Sequence(Iterable[Element]):
         return self.filter(lambda x: key(x) is not None)
 
     def append(self, seq: Iterable[Element]) -> 'Sequence[Element]':
-        def gen(*seqs: Iterable[Element]):
+        def gen(*seqs: Iterable[Element]) -> Iterator[Iterable[Element]]:
             yield from seqs
 
         return Sequence(gen(self, seq)).flat_map()
@@ -105,7 +105,7 @@ class Sequence(Iterable[Element]):
         return acc
 
     def group_by(self, key: Callable[[Element], Key]) -> 'Sequence[tuple[Key, Sequence[Element]]]':
-        def reducer(acc, element):
+        def reducer(acc: defaultdict[Key, list[Element]], element: Element) -> defaultdict[Key, list[Element]]:
             acc[key(element)].append(element)
 
             return acc

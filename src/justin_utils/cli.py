@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 13):
@@ -18,10 +18,12 @@ Context = Any
 T = TypeVar("T")
 
 
-@deprecated("cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it")
+@deprecated(
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
+)
 @dataclass
 class Parameter:
-    class Action(str, Enum):
+    class Action(StrEnum):
         STORE_TRUE = "store_true"
 
     name: str = None
@@ -49,16 +51,18 @@ class Parameter:
     @property
     def name_or_flags(self) -> Iterable[str]:
         # noinspection PyTypeChecker
-        return tuple(i for i in (self.name,) + self.flags if i)
+        return tuple(i for i in (self.name, *self.flags) if i)
 
     @property
     def params(self) -> dict[str, Any]:
         return {k: v for k, v in asdict(self).items() if k not in Parameter.not_kw_fields and v}
 
 
-@deprecated("cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it")
+@deprecated(
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
+)
 class Action(ABC):
-    def configure_subparser(self, subparser: ArgumentParser) -> None:
+    def configure_subparser(self, subparser: ArgumentParser) -> None:  # noqa: B027 optional hook
         pass
 
     @property
@@ -70,7 +74,9 @@ class Action(ABC):
         pass
 
 
-@deprecated("cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it")
+@deprecated(
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
+)
 class Command:
     def __init__(self, name: str, actions: Iterable[Action], allowed_same_parameters: Iterable[str] = ()) -> None:
         super().__init__()
@@ -96,7 +102,7 @@ class Command:
     def name(self) -> str:
         return self.__name
 
-    def configure_parser(self, parser_adder) -> None:
+    def configure_parser(self, parser_adder: Any) -> None:
         subparser: ArgumentParser = parser_adder.add_parser(self.__name)
 
         self.configure_subparser(subparser)
@@ -124,7 +130,9 @@ class Command:
             action.perform(args, context)
 
 
-@deprecated("cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it")
+@deprecated(
+    "cli.py is unused internally since parts.py migrated to Typer; confirm it's still needed before relying on it",
+)
 class App:
     def __init__(self, commands: Iterable[Command], context: Context = None) -> None:
         super().__init__()

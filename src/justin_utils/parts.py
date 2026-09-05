@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from math import log10
 from pathlib import Path
+from typing import Self
 
 import typer
 
@@ -23,7 +24,7 @@ class Part:
     path: Path
 
     @classmethod
-    def from_path(cls, path: Path) -> "Part":
+    def from_path(cls, path: Path) -> Self:
         name_parts = path.name.split(SEPARATOR, maxsplit=1)
 
         index = int(name_parts[0])
@@ -33,10 +34,10 @@ class Part:
         else:
             name = None
 
-        return Part(
+        return cls(
             index=index,
             name=name,
-            path=path
+            path=path,
         )
 
     @staticmethod
@@ -95,7 +96,7 @@ def to_padded_string(number: int, length: int, padding: str) -> str:
 def new_part_name(part: Part, new_index: int, max_index_length: int) -> str:
     new_name_parts = [
         to_padded_string(new_index, max_index_length, "0"),
-        part.name
+        part.name,
     ]
 
     name_parts = [i for i in new_name_parts if i is not None]
@@ -122,7 +123,7 @@ def for_each_root(root_patterns: list[str], perform_for_root: Callable[[Path, li
 
 
 @app.command()
-def make(count: int, root: list[str] = typer.Argument(["."])) -> None:  # noqa: B008
+def make(count: int, root: list[str] = typer.Argument(["."])) -> None:
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         existing_indices = {part.index for part in parts}
 
@@ -146,7 +147,7 @@ def make(count: int, root: list[str] = typer.Argument(["."])) -> None:  # noqa: 
 
 
 @app.command()
-def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:  # noqa: B008
+def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         parts_count = len(parts)
 
@@ -179,7 +180,11 @@ def renumber(root: list[str] = typer.Argument(["."]), width: int | None = typer.
 
 
 @app.command()
-def offset(offset: int, root: list[str] = typer.Argument(["."]), width: int | None = typer.Option(None, "-w", "--width")) -> None:  # noqa: B008
+def offset(
+    offset: int,
+    root: list[str] = typer.Argument(["."]),
+    width: int | None = typer.Option(None, "-w", "--width"),
+) -> None:
     def perform_for_root(root_path: Path, parts: list[Part]) -> None:
         if not parts:
             return

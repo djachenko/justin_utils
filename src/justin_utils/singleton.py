@@ -1,11 +1,8 @@
-from abc import ABC
 from functools import cache
-from typing import Self, TypeVar
-
-T = TypeVar('T', bound='Singleton')
+from typing import Self
 
 
-class Singleton(ABC):
+class Singleton:
     __initiating_from_instance = False
 
     def __init__(self) -> None:
