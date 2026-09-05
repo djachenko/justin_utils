@@ -105,6 +105,12 @@ class TestContainers:
     def test_plain_returns_path_itself(self, image_path):
         assert PlainContainer().read(image_path) is image_path
 
+    def test_raf_skips_truncated_header(self, tmp_path):
+        path = tmp_path / "truncated.raf"
+        path.write_bytes(_RAF_MAGIC + b"\0" * 40)
+
+        assert RafContainer().read(path) is None
+
     def test_raf_read_is_repeatable(self, raf_path):
         path, payload = raf_path
         container = RafContainer()
@@ -148,6 +154,12 @@ class TestRealFiles:
         path.write_text('{"not": "an image"}')
 
         assert Exif.from_path(path) is None
+
+    def test_returns_none_for_truncated_raf(self, tmp_path):
+        path = tmp_path / "truncated.raf"
+        path.write_bytes(_RAF_MAGIC + b"\0" * 40)
+
+        assert parse_exif(path) is None
 
 
 class TestParseExif:

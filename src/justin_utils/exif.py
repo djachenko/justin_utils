@@ -34,7 +34,12 @@ class RafContainer(Container):
 
             file.seek(self.__JPEG_HEADER_OFFSET)
 
-            offset, length = struct.unpack(">II", file.read(8))
+            header = file.read(8)
+
+            if len(header) < 8:
+                return None
+
+            offset, length = struct.unpack(">II", header)
 
             file.seek(offset)
 
