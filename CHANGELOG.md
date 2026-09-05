@@ -2,6 +2,45 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-09-05)
+
+### Build System
+
+- Add py.typed marker
+  ([`9fdef21`](https://github.com/djachenko/justin_utils/commit/9fdef214f4291865eaa40800ffa2889fa4941cc8))
+
+### Chores
+
+- Ignore the _claude symlink
+  ([`5eac279`](https://github.com/djachenko/justin_utils/commit/5eac2798c7399501165d805bf2ee9e74bc02ef9e))
+
+### Code Style
+
+- Collapse the parametrize decorator
+  ([`1ba68c3`](https://github.com/djachenko/justin_utils/commit/1ba68c3aa1d9d3175528b13f1c981884b1525afc))
+
+### Features
+
+- Report deserialization failures with DictableError
+  ([`e128ff4`](https://github.com/djachenko/justin_utils/commit/e128ff40e00ee732799d423c5fd4a3cc7d240265))
+
+### Refactoring
+
+- Replace lambda defaults with named callables in pylinq
+  ([`cd2bc3f`](https://github.com/djachenko/justin_utils/commit/cd2bc3f40c0313dc84ac9d4487049afe29aae898))
+
+- Stop assuming every Dictable is a dataclass
+  ([`2e6366e`](https://github.com/djachenko/justin_utils/commit/2e6366ee6cb05502eaff1950f70330551dd284f4))
+
+### Testing
+
+- Accept the windows error for reading a directory
+  ([`ef4bcf3`](https://github.com/djachenko/justin_utils/commit/ef4bcf3b3333e15d7f883022526f435b031eff1a))
+
+- Support binary files in the conftest file tree
+  ([`9d2f49f`](https://github.com/djachenko/justin_utils/commit/9d2f49f6a50ceec9db1805ab9a5444ef2c6ca989))
+
+
 ## v0.4.1 (2026-09-05)
 
 ### Bug Fixes
