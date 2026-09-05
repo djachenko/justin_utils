@@ -56,7 +56,7 @@ class TestDataSizeArithmetic:
         assert result.canonic_value() == 1024
 
     def test_sub_non_data_size_raises(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(TypeError):
             DataSize(1024) - 512
 
     def test_truediv_timedelta_returns_data_speed(self):
@@ -76,7 +76,7 @@ class TestDataSizeArithmetic:
         assert DataSize(2048) / speed is None
 
     def test_truediv_invalid_type_raises(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(TypeError):
             DataSize(1024) / 2
 
     @pytest.mark.parametrize(

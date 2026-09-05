@@ -94,13 +94,13 @@ class DataSize:
 
             return timedelta(seconds=time_in_seconds)
         else:
-            raise AssertionError
+            return NotImplemented
 
     def __sub__(self, other: 'DataSize') -> 'DataSize':
         if isinstance(other, DataSize):
             return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
         else:
-            raise AssertionError
+            return NotImplemented
 
     def __lt__(self, other: Union['DataSize', int]) -> bool:
         if isinstance(other, DataSize):

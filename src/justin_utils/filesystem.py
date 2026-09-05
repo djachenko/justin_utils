@@ -91,7 +91,7 @@ def __get_mount(path: Path) -> Path:
     elif system_name == "Windows":
         return __get_windows_mount(path)
     else:
-        raise AssertionError
+        raise NotImplementedError(f"unsupported platform: {system_name}")
 
 
 # endregion
@@ -192,7 +192,7 @@ def move(src_path: Path, dst_path: Path) -> None:
     elif src_path.is_file():
         __move_file(src_path, new_file_path)
     else:
-        raise AssertionError
+        raise ValueError(f"neither a file nor a directory: {src_path}")
 
 
 # endregion
@@ -227,7 +227,7 @@ def copy(src_path: Path, dst_path: Path) -> None:
     elif src_path.is_dir():
         __copy_tree(src_path, new_item_path)
     else:
-        raise AssertionError
+        raise ValueError(f"neither a file nor a directory: {src_path}")
 
 
 # endregion
@@ -531,7 +531,7 @@ class Folder(PathBased):
         elif new_path.is_dir():
             self.merge_into(new_path)
         else:
-            raise AssertionError
+            raise FileExistsError(new_path)
 
         self.refresh()
 
@@ -614,7 +614,7 @@ def parse_paths(paths: list[Path]) -> list[PathBased]:
         elif path.is_dir():
             result.append(Folder(path))
         else:
-            raise AssertionError
+            raise ValueError(f"neither a file nor a directory: {path}")
 
     return result
 
