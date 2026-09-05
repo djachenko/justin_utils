@@ -89,7 +89,7 @@ class DataSize:
 
     def __sub__(self, other: 'DataSize') -> Self:
         if isinstance(other, DataSize):
-            return self.from_bytes(self.canonic_value() - other.canonic_value())
+            return type(self).from_bytes(self.canonic_value() - other.canonic_value())
         else:
             return NotImplemented
 
