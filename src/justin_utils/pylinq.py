@@ -20,12 +20,16 @@ def identity(x: T) -> T:
     return x
 
 
+def accept_all(_: Any) -> bool:
+    return True
+
+
 class Sequence(Iterable[Element]):
     def __init__(
             self,
             base: Iterable[Element] | None = None,
-            predicate: Callable[[Element], bool] = lambda _: True,
-            modifier: Callable[[Element], Result] = identity,
+            predicate: Callable[[Any], bool] = accept_all,
+            modifier: Callable[[Any], Any] = identity,
     ) -> None:
         super().__init__()
 
@@ -36,7 +40,7 @@ class Sequence(Iterable[Element]):
         self.__modifier = modifier
         self.__predicate = predicate
 
-    def __iter__(self) -> Iterator[Result]:
+    def __iter__(self) -> Iterator[Element]:
         for i in self.__base:
             if self.__predicate(i):
                 yield self.__modifier(i)
