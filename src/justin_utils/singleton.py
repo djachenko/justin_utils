@@ -1,7 +1,5 @@
 from functools import cache
-from typing import Self, TypeVar
-
-T = TypeVar('T', bound='Singleton')
+from typing import Self
 
 
 class Singleton:
