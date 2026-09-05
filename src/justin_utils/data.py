@@ -1,7 +1,7 @@
 from datetime import timedelta
 from enum import Enum
 from functools import cache
-from typing import Union, overload
+from typing import Self, Union, overload
 
 
 class DataSize:
@@ -17,27 +17,18 @@ class DataSize:
             self.size = size
             self.acronym = acronym
 
-        @staticmethod
+        @classmethod
         @cache
-        def sorted_units() -> list['DataSize.Unit']:
-            return sorted(
-                [
-                    DataSize.Unit.BYTE,
-                    DataSize.Unit.KILOBYTE,
-                    DataSize.Unit.MEGABYTE,
-                    DataSize.Unit.GIGABYTE,
-                ],
-                key=lambda u: u.size,
-                reverse=True,
-            )
+        def sorted_units(cls) -> list[Self]:
+            return sorted(cls, key=lambda u: u.size, reverse=True)
 
-        @staticmethod
-        def for_value(value: int) -> 'DataSize.Unit':
-            for unit in DataSize.Unit.sorted_units():
+        @classmethod
+        def for_value(cls, value: int) -> Self:
+            for unit in cls.sorted_units():
                 if value >= unit.size:
                     return unit
 
-            return DataSize.Unit.BYTE
+            return cls.BYTE
 
     def __init__(self, size_in_bytes: int) -> None:
         super().__init__()
@@ -68,12 +59,12 @@ class DataSize:
         self.__bytes += bytes_
 
     @classmethod
-    def __from_unit(cls, size: float, unit: Unit) -> 'DataSize':
-        return DataSize(round(size * unit.size))
+    def __from_unit(cls, size: float, unit: Unit) -> Self:
+        return cls(round(size * unit.size))
 
     @classmethod
-    def from_bytes(cls, size: int) -> 'DataSize':
-        return DataSize.__from_unit(size, DataSize.Unit.BYTE)
+    def from_bytes(cls, size: int) -> Self:
+        return cls.__from_unit(size, DataSize.Unit.BYTE)
 
     @overload
     def __truediv__(self, other: timedelta) -> 'DataSpeed': ...
@@ -96,9 +87,9 @@ class DataSize:
         else:
             return NotImplemented
 
-    def __sub__(self, other: 'DataSize') -> 'DataSize':
+    def __sub__(self, other: 'DataSize') -> Self:
         if isinstance(other, DataSize):
-            return DataSize.from_bytes(self.canonic_value() - other.canonic_value())
+            return self.from_bytes(self.canonic_value() - other.canonic_value())
         else:
             return NotImplemented
 

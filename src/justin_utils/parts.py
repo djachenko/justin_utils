@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from math import log10
 from pathlib import Path
+from typing import Self
 
 import typer
 
@@ -23,7 +24,7 @@ class Part:
     path: Path
 
     @classmethod
-    def from_path(cls, path: Path) -> "Part":
+    def from_path(cls, path: Path) -> Self:
         name_parts = path.name.split(SEPARATOR, maxsplit=1)
 
         index = int(name_parts[0])
@@ -33,7 +34,7 @@ class Part:
         else:
             name = None
 
-        return Part(
+        return cls(
             index=index,
             name=name,
             path=path,
