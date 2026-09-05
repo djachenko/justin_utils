@@ -31,15 +31,14 @@ class DictableError(Exception):
 
 
 class Dictable(ABC):
-    __dataclass_fields__: ClassVar[dict[str, Field[Any]]]
-
     @classmethod
     def rules(cls) -> Rules:
         return {}
 
     @classmethod
+    @abstractmethod
     def from_dict(cls, json_object: Json) -> Self:
-        return fromdict(json_object, cls)
+        pass
 
     @abstractmethod
     def as_dict(self) -> Mapping[str, Any]:
@@ -47,6 +46,12 @@ class Dictable(ABC):
 
 
 class DictableDataclass(Dictable):
+    __dataclass_fields__: ClassVar[dict[str, Field[Any]]]
+
+    @classmethod
+    def from_dict(cls, json_object: Json) -> Self:
+        return fromdict(json_object, cls)
+
     def as_dict(self) -> Mapping[str, Any]:
         if not is_dataclass(self):
             raise TypeError(f"{type(self).__name__} is not a dataclass")
@@ -114,8 +119,11 @@ def _convert(value: Json, field_type: Any, rules: Rules, effective: Rules, path:
             _convert(item, element_type, rules, effective, f"{path}[{index}]") for index, item in enumerate(value)
         )
 
-    if isinstance(field_type, type) and issubclass(field_type, Dictable):
+    if isinstance(field_type, type) and issubclass(field_type, DictableDataclass):
         return _fromdict(value, field_type, rules, path)
+
+    if isinstance(field_type, type) and issubclass(field_type, Dictable):
+        return field_type.from_dict(value)
 
     if field_type is Any:
         return value
