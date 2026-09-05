@@ -3,6 +3,7 @@ from collections.abc import Callable, Hashable, Iterable, Iterator
 from typing import (
     Any,
     TypeVar,
+    overload,
 )
 
 Element = TypeVar("Element")
@@ -27,7 +28,7 @@ def accept_all(_: Any) -> bool:
 class Sequence(Iterable[Element]):
     def __init__(
         self,
-        base: Iterable[Element] | None = None,
+        base: Iterable[Any] | None = None,
         predicate: Callable[[Any], bool] = accept_all,
         modifier: Callable[[Any], Any] = identity,
     ) -> None:
@@ -67,7 +68,13 @@ class Sequence(Iterable[Element]):
     def map(self, modifier: Callable[[Element], Result]) -> "Sequence[Result]":
         return Sequence(self, modifier=modifier)
 
-    def flat_map(self, modifier: Callable[[Element], Iterable[Result]] = identity) -> "Sequence[Result]":
+    @overload
+    def flat_map(self: "Sequence[Iterable[Result]]") -> "Sequence[Result]": ...
+
+    @overload
+    def flat_map(self, modifier: Callable[[Element], Iterable[Result]]) -> "Sequence[Result]": ...
+
+    def flat_map(self, modifier: Any = identity) -> "Sequence[Result]":
         def generator(seq: "Sequence[Element]") -> Iterator[Result]:
             for subsequence in seq.map(modifier):
                 yield from subsequence
@@ -110,7 +117,8 @@ class Sequence(Iterable[Element]):
 
             return acc
 
-        result = self.reduce(defaultdict(list), reducer)
+        initial: defaultdict[Key, list[Element]] = defaultdict(list)
+        result = self.reduce(initial, reducer)
 
         return Sequence(result.items()).map(lambda e: (e[0], Sequence(e[1])))
 
@@ -153,14 +161,20 @@ class Sequence(Iterable[Element]):
     def to_set(self) -> set[Element]:
         return set(self)
 
-    def to_dict(self, item_generator: Callable[[Element], tuple[Key, Value]] = identity) -> dict[Key, Value]:
+    @overload
+    def to_dict(self: "Sequence[tuple[Key, Value]]") -> dict[Key, Value]: ...
+
+    @overload
+    def to_dict(self, item_generator: Callable[[Element], tuple[Key, Value]]) -> dict[Key, Value]: ...
+
+    def to_dict(self, item_generator: Any = identity) -> dict[Key, Value]:
         return {k: v for k, v in self.map(item_generator)}
 
     def each(self, action: Callable[[Element], None]) -> None:
         for element in self:
             action(element)
 
-    def any(self, predicate: Callable[[Element], bool] = lambda x: x) -> bool:
+    def any(self, predicate: Callable[[Element], bool] = bool) -> bool:
         return any(self.map(predicate))
 
     def same(self) -> bool:
