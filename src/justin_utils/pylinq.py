@@ -1,7 +1,11 @@
+from __future__ import annotations
+
+import itertools
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator
 from typing import (
     Any,
+    Self,
     TypeVar,
     overload,
 )
@@ -47,59 +51,56 @@ class Sequence(Iterable[Element]):
                 yield self.__modifier(i)
 
     @classmethod
-    def empty(cls) -> "Sequence":
+    def empty(cls) -> Sequence:
         return Sequence()
 
     @classmethod
-    def with_sequence(cls, sequence: Iterable[Element]) -> "Sequence[Element]":
+    def with_sequence(cls, sequence: Iterable[Element]) -> Sequence[Element]:
         return Sequence(sequence)
 
     @classmethod
-    def with_single(cls, element: Element) -> "Sequence[Element]":
+    def with_single(cls, element: Element) -> Sequence[Element]:
         return cls.with_sequence([element])
 
     @classmethod
-    def with_dict(cls, dictionary: dict[Key, Value]) -> "Sequence[tuple[Key, Value]]":
+    def with_dict(cls, dictionary: dict[Key, Value]) -> Sequence[tuple[Key, Value]]:
         return Sequence.with_sequence(dictionary.items())
 
-    def filter(self, predicate: Callable[[Element], bool]) -> "Sequence[Element]":
-        return Sequence(self, predicate=predicate)
+    def filter(self, predicate: Callable[[Element], bool]) -> Self:
+        return type(self)(self, predicate=predicate)
 
-    def map(self, modifier: Callable[[Element], Result]) -> "Sequence[Result]":
+    def map(self, modifier: Callable[[Element], Result]) -> Sequence[Result]:
         return Sequence(self, modifier=modifier)
 
     @overload
-    def flat_map(self: "Sequence[Iterable[Result]]") -> "Sequence[Result]": ...
+    def flat_map(self: Sequence[Iterable[Result]]) -> Sequence[Result]: ...
 
     @overload
-    def flat_map(self, modifier: Callable[[Element], Iterable[Result]]) -> "Sequence[Result]": ...
+    def flat_map(self, modifier: Callable[[Element], Iterable[Result]]) -> Sequence[Result]: ...
 
-    def flat_map(self, modifier: Any = identity) -> "Sequence[Result]":
-        def generator(seq: "Sequence[Element]") -> Iterator[Result]:
+    def flat_map(self, modifier: Any = identity) -> Sequence[Result]:
+        def generator(seq: Sequence[Element]) -> Iterator[Result]:
             for subsequence in seq.map(modifier):
                 yield from subsequence
 
         return Sequence(generator(self))
 
-    def __filter_by_index(self, predicate: Callable[[int], bool]) -> "Sequence[Element]":
-        return Sequence(enumerate(self), predicate=lambda t: predicate(t[0]), modifier=lambda t: t[1])
+    def __filter_by_index(self, predicate: Callable[[int], bool]) -> Self:
+        return type(self)(enumerate(self), predicate=lambda t: predicate(t[0]), modifier=lambda t: t[1])
 
-    def take(self, count: int) -> "Sequence[Element]":
+    def take(self, count: int) -> Self:
         return self.__filter_by_index(lambda i: i < count)
 
-    def skip(self, count: int) -> "Sequence[Element]":
+    def skip(self, count: int) -> Self:
         return self.__filter_by_index(lambda i: i >= count)
 
-    def not_null(self, key: Callable[[Element], Any | None] = identity) -> "Sequence[Element]":
+    def not_null(self, key: Callable[[Element], Any | None] = identity) -> Self:
         return self.filter(lambda x: key(x) is not None)
 
-    def append(self, seq: Iterable[Element]) -> "Sequence[Element]":
-        def gen(*seqs: Iterable[Element]) -> Iterator[Iterable[Element]]:
-            yield from seqs
+    def append(self, seq: Iterable[Element]) -> Self:
+        return type(self)(itertools.chain(self, seq))
 
-        return Sequence(gen(self, seq)).flat_map()
-
-    def add(self, item: Element) -> "Sequence[Element]":
+    def add(self, item: Element) -> Self:
         return self.append([item])
 
     def sum(self, key: Callable[[Element], Any] = identity) -> int:
@@ -111,7 +112,7 @@ class Sequence(Iterable[Element]):
 
         return acc
 
-    def group_by(self, key: Callable[[Element], Key]) -> "Sequence[tuple[Key, Sequence[Element]]]":
+    def group_by(self, key: Callable[[Element], Key]) -> Sequence[tuple[Key, Sequence[Element]]]:
         def reducer(acc: defaultdict[Key, list[Element]], element: Element) -> defaultdict[Key, list[Element]]:
             acc[key(element)].append(element)
 
@@ -122,7 +123,7 @@ class Sequence(Iterable[Element]):
 
         return Sequence(result.items()).map(lambda e: (e[0], Sequence(e[1])))
 
-    def distinct(self, key: Callable[[Element], Hashable] = identity) -> "Sequence[Element]":
+    def distinct(self, key: Callable[[Element], Hashable] = identity) -> Self:
         hashes = set()
         results = []
 
@@ -133,7 +134,7 @@ class Sequence(Iterable[Element]):
                 hashes.add(e_hash)
                 results.append(e)
 
-        return Sequence(results)
+        return type(self)(results)
 
     def is_distinct(self, key: Callable[[Element], Hashable] = identity) -> bool:
         hashes = set()
@@ -146,8 +147,8 @@ class Sequence(Iterable[Element]):
 
         return True
 
-    def cache(self) -> "Sequence[Element]":
-        return Sequence(self.to_list())
+    def cache(self) -> Self:
+        return type(self)(self.to_list())
 
     def max(self, key: Callable[[Element], Any] = identity) -> Element | None:
         return max(self, key=key, default=None)
@@ -162,7 +163,7 @@ class Sequence(Iterable[Element]):
         return set(self)
 
     @overload
-    def to_dict(self: "Sequence[tuple[Key, Value]]") -> dict[Key, Value]: ...
+    def to_dict(self: Sequence[tuple[Key, Value]]) -> dict[Key, Value]: ...
 
     @overload
     def to_dict(self, item_generator: Callable[[Element], tuple[Key, Value]]) -> dict[Key, Value]: ...
