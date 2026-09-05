@@ -357,7 +357,8 @@ class TestFrompath:
             frompath(temp_dir / "absent.json", Leaf)
 
     def test_directory_raises(self, temp_dir):
-        with pytest.raises(IsADirectoryError):
+        # IsADirectoryError on posix, PermissionError on windows
+        with pytest.raises(OSError):
             frompath(temp_dir, Leaf)
 
     def test_reads_object(self, temp_dir, create_files):
