@@ -12,7 +12,7 @@ description = "Utilities for the Justin project"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Igor Djachenko" }]
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "justin_utils[util]",
     "justin_utils[joins]",
@@ -40,7 +40,6 @@ other      = [
 ]
 filesystem = [
     "justin_utils[other]",
-    "typing_extensions; python_version < '3.13'",
 ]
 cli        = [
     "justin_utils[util]",
@@ -100,7 +99,7 @@ ignore = [
 "tests/*" = ["ANN"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 
 [[tool.mypy.overrides]]
 module = [

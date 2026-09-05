@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import itertools
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator
@@ -21,7 +19,7 @@ Acc = TypeVar("Acc")
 T = TypeVar("T")
 
 
-def identity(x: T) -> T:
+def identity[T](x: T) -> T:
     return x
 
 

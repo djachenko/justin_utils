@@ -23,7 +23,7 @@ class Part:
     path: Path
 
     @classmethod
-    def from_path(cls, path: Path) -> "Part":
+    def from_path(cls, path: Path) -> Part:
         name_parts = path.name.split(SEPARATOR, maxsplit=1)
 
         index = int(name_parts[0])

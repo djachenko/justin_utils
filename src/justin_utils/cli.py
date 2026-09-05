@@ -1,15 +1,10 @@
-import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from typing import Any, ClassVar, TypeVar
-
-if sys.version_info >= (3, 13):
-    from warnings import deprecated
-else:
-    from typing_extensions import deprecated
+from warnings import deprecated
 
 from justin_utils.util import is_distinct
 

@@ -11,7 +11,7 @@ T = TypeVar("T")
 V = TypeVar("V")
 
 
-def split_by_predicates(seq: Iterable[T], *lambdas: Callable[[T], bool]) -> Iterable[Iterable[T]]:
+def split_by_predicates[T](seq: Iterable[T], *lambdas: Callable[[T], bool]) -> Iterable[Iterable[T]]:
     return [list(filter(x, seq)) for x in lambdas]
 
 
@@ -64,7 +64,7 @@ def ask_for_choice_with_other(question: str, options: list[str]) -> str:
     return option
 
 
-def ask_for_choice(question: str, options: list[T]) -> T | str:
+def ask_for_choice[T](question: str, options: list[T]) -> T | str:
     assert len(options) > 0
 
     if len(options) == 1:
@@ -111,7 +111,7 @@ def measure_time(name: str | None = None) -> Callable[..., Any]:
     return decorator
 
 
-def concat_dictionaries(*dictionaries: dict[T, Any]) -> dict[T, Any]:
+def concat_dictionaries[T](*dictionaries: dict[T, Any]) -> dict[T, Any]:
     result: dict[T, Any] = {}
 
     for dictionary in dictionaries:
@@ -132,16 +132,16 @@ def resolve_patterns(*patterns: str) -> Iterable[Path]:
             yield path
 
 
-def flatten_lazy(list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
+def flatten_lazy[T](list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
     for sublist in list_of_lists:
         yield from sublist
 
 
-def flat_map(list_of_lists: Iterable[Iterable[T]]) -> list[T]:
+def flat_map[T](list_of_lists: Iterable[Iterable[T]]) -> list[T]:
     return list(flatten_lazy(list_of_lists))
 
 
-def distinct(items: Iterable[T]) -> list[T]:
+def distinct[T](items: Iterable[T]) -> list[T]:
     cache = set()
     result = []
 
@@ -153,7 +153,7 @@ def distinct(items: Iterable[T]) -> list[T]:
     return result
 
 
-def is_distinct(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool:
+def is_distinct[T](seq: Iterable[T], key: Callable[[T], Any] = lambda x: x) -> bool:
     try:
         # noinspection PyTypeChecker
         seq_len = len(seq)  # type: ignore[arg-type]
@@ -230,7 +230,7 @@ def random_date(start: time, end: time, count: int) -> Iterator[time]:
         yield result
 
 
-def group_by(key: Callable[[T], V], seq: Iterable[T]) -> dict[V, list[T]]:
+def group_by[T, V](key: Callable[[T], V], seq: Iterable[T]) -> dict[V, list[T]]:
     mapping = defaultdict(list)
 
     for i in seq:
@@ -239,7 +239,7 @@ def group_by(key: Callable[[T], V], seq: Iterable[T]) -> dict[V, list[T]]:
     return mapping
 
 
-def stride(seq: Iterable[T], step: int) -> Iterable[list[T]]:
+def stride[T](seq: Iterable[T], step: int) -> Iterable[list[T]]:
     # i = iter(seq)
     #
     # def inner() -> Iterable[T]:
@@ -268,7 +268,7 @@ def stride(seq: Iterable[T], step: int) -> Iterable[list[T]]:
         yield current
 
 
-def first(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x, default: T | None = None) -> T | None:
+def first[T](seq: Iterable[T], key: Callable[[T], Any] = lambda x: x, default: T | None = None) -> T | None:
     for i in seq:
         if key(i):
             return i
@@ -276,7 +276,7 @@ def first(seq: Iterable[T], key: Callable[[T], Any] = lambda x: x, default: T | 
     return default
 
 
-def bfs(start: T, provider: Callable[[T], Iterable[T]]) -> None:
+def bfs[T](start: T, provider: Callable[[T], Iterable[T]]) -> None:
     roots = [start]
 
     while roots:
@@ -293,7 +293,7 @@ def get_prefixes(s: str, separator: str) -> list[str]:
     return prefixes
 
 
-def merge_dicts(merger: Callable[[V, V], V], *dicts: dict[T, V]) -> dict[T, V]:
+def merge_dicts[V, T](merger: Callable[[V, V], V], *dicts: dict[T, V]) -> dict[T, V]:
     result: dict[T, V] = {}
 
     for d in dicts:

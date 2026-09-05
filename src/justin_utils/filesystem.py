@@ -9,11 +9,7 @@ from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
 from typing import ClassVar, Self
-
-if sys.version_info >= (3, 13):
-    from warnings import deprecated
-else:
-    from typing_extensions import deprecated
+from warnings import deprecated
 
 from justin_utils.data import DataSize
 from justin_utils.time_formatter import format_time

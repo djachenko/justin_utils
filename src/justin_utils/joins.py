@@ -9,7 +9,7 @@ V = TypeVar("V")
 # todo: rewrite in lazy way
 
 
-def full_outer(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> list[tuple[T, V]]:
+def full_outer[T, V](seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> list[tuple[T, V]]:
     sequences = [seq1, seq2]
 
     inclusion_mapping = [{e: False for e in seq} for seq in [seq1, seq2]]
@@ -51,13 +51,13 @@ def __has_both(pair: tuple[Any, Any]) -> bool:
     return __has_left(pair) and __has_right(pair)
 
 
-def inner(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
+def inner[T, V](seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
     return [i for i in full_outer(seq1, seq2, on) if __has_both(i)]
 
 
-def left(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
+def left[T, V](seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
     return [i for i in full_outer(seq1, seq2, on) if __has_left(i)]
 
 
-def right(seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
+def right[T, V](seq1: Iterable[T], seq2: Iterable[V], on: Callable[[T, V], bool]) -> Iterable[tuple[T, V]]:
     return [i for i in full_outer(seq1, seq2, on) if __has_right(i)]

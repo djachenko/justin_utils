@@ -139,7 +139,7 @@ def _effective(data_class: type, rules: Rules) -> Rules:
     return {**rules, **own}
 
 
-def _fromdict(obj: Json, data_class: type[V], rules: Rules, path: str) -> V:
+def _fromdict[V: DataclassLike](obj: Json, data_class: type[V], rules: Rules, path: str) -> V:
     if not isinstance(obj, dict):
         raise DictableError(path, f"expected an object, got {type(obj).__name__}")
 
@@ -176,11 +176,11 @@ def _fromdict(obj: Json, data_class: type[V], rules: Rules, path: str) -> V:
     return data_class(**result)
 
 
-def fromdict(obj: Json, data_class: type[V], rules: Rules | None = None) -> V:
+def fromdict[V: DataclassLike](obj: Json, data_class: type[V], rules: Rules | None = None) -> V:
     return _fromdict(obj, data_class, rules or {}, data_class.__name__)
 
 
-def frompath(path: Path, data_class: type[V], rules: Rules | None = None) -> V:
+def frompath[V: DataclassLike](path: Path, data_class: type[V], rules: Rules | None = None) -> V:
     try:
         return fromdict(json.loads(path.read_text()), data_class, rules)
     except (JSONDecodeError, UnicodeDecodeError) as error:
