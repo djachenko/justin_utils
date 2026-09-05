@@ -2,6 +2,56 @@
 
 <!-- version list -->
 
+## v0.4.1 (2026-09-05)
+
+### Bug Fixes
+
+- Raise AssertionError instead of assert False
+  ([`6e0dc14`](https://github.com/djachenko/justin_utils/commit/6e0dc148b1bab63baa1266f1ea7dccdc2208275b))
+
+- Raise meaningful exceptions instead of AssertionError
+  ([`c6a6cd8`](https://github.com/djachenko/justin_utils/commit/c6a6cd893b6406cfd9e00d894d688b5df42065c4))
+
+- Return None for a RAF with a truncated header
+  ([`d347f81`](https://github.com/djachenko/justin_utils/commit/d347f814259b4fef9834a2ddc25e6c2e249d20c4))
+
+### Chores
+
+- Configure ruff lint rules and line length
+  ([`5bde5ef`](https://github.com/djachenko/justin_utils/commit/5bde5ef93df21a3f0289c7f5a8596b0dd9fdbc0e))
+
+### Code Style
+
+- Apply ruff format
+  ([`80c5a39`](https://github.com/djachenko/justin_utils/commit/80c5a39f2058757fa1670606f0d32af1885d8876))
+
+- Drop the formatter, keep the linter
+  ([`642e030`](https://github.com/djachenko/justin_utils/commit/642e0301081a95b09219ef63df93c858cdafbd6b))
+
+- Preserve author quote style and keep exploded call sites
+  ([`0d0de99`](https://github.com/djachenko/justin_utils/commit/0d0de99e8aafb218386c49f2b55b0242e58fe2e5))
+
+### Refactoring
+
+- Call the classmethod on type(self), not the instance
+  ([`21cce05`](https://github.com/djachenko/justin_utils/commit/21cce05fff1e29e2e32a2152aaae5a60bf7fcfd4))
+
+- Drop the decorative ABC from Singleton
+  ([`70d5acc`](https://github.com/djachenko/justin_utils/commit/70d5accb93c80771da6a8af97fcb9e6df34290de))
+
+- Drop two noqa directives by fixing their cause
+  ([`84f88ca`](https://github.com/djachenko/justin_utils/commit/84f88cade2c8210fb056b27d8bc111347d73bc33))
+
+- Fix ruff lint findings
+  ([`517c6a7`](https://github.com/djachenko/justin_utils/commit/517c6a7e7acf1c868190d6d8cb9d162038458afc))
+
+- Remove the unused TypeVar from singleton
+  ([`07cb39c`](https://github.com/djachenko/justin_utils/commit/07cb39ce74255f0911e19e87df30460143e030e6))
+
+- Return Self from constructing classmethods
+  ([`9b19301`](https://github.com/djachenko/justin_utils/commit/9b193013045dc74c78a6d8e21870ab29a3792969))
+
+
 ## v0.4.0 (2026-08-19)
 
 ### Features
