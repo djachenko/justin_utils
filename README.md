@@ -84,6 +84,9 @@ Lazy `Sequence` wrapper with a LINQ-style API: `filter`, `map`, `flat_map`, `gro
 ### `sources`
 Photo source abstraction: groups raw files (NEF, RAF, ARW) with their XMP sidecar metadata, and JPEG/TIFF/DNG/HEIC files with embedded metadata. `parse_sources` returns a flat list of `Source` objects ready for sorting or moving.
 
+### `testing`
+pytest plugin with the `create_files` fixture: builds a file tree from a nested dict (`None` — empty file, `str`/`bytes` — content, `dict` — folder). Install `justin_utils[testing]` and enable it in the root `conftest.py` with `pytest_plugins = ["justin_utils.testing"]`.
+
 ### `time_formatter`
 `format_time(delta)` — formats a `timedelta` as a human-readable string (`"X h"`, `"Y m"`, `"Z s"`).
 
