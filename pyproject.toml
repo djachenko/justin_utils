@@ -58,6 +58,9 @@ sources    = [
     "justin_utils[exif]",
     "justin_utils[filesystem]",
 ]
+testing    = [
+    "pytest",
+]
 test       = [
     "pytest",
     "ruff >= 0.16, < 0.17",

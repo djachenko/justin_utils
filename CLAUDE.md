@@ -32,6 +32,7 @@ pyvko  ──→ justin_utils (планируется)
 | `singleton.py` | Singleton паттерн |
 | `joins.py`, `pylinq.py` | LINQ-подобные операции над коллекциями |
 | `json_migration.py` | Утилиты для JSON-миграций |
+| `testing.py` | pytest-плагин с фикстурой `create_files`; подключается через `pytest_plugins`, extra `testing` |
 
 ---
 
