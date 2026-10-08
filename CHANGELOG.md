@@ -2,6 +2,28 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-10-08)
+
+### Features
+
+- Add create_files pytest fixture as a shareable plugin
+  ([`917fbff`](https://github.com/djachenko/justin_utils/commit/917fbff7ee02ca2e452ea695bee2d8fceccde7d2))
+
+### Refactoring
+
+- Load create_files from justin_utils.testing in own tests
+  ([`60bb8fc`](https://github.com/djachenko/justin_utils/commit/60bb8fc7645fd45a86b2f33d58029b7703fd2b97))
+
+- Return Self from pylinq methods and drop quoted annotations
+  ([`895c260`](https://github.com/djachenko/justin_utils/commit/895c260af22471cfedbfc86f61060f75cf71adbd))
+
+- Return Self from the constructing classmethods
+  ([`228d5c6`](https://github.com/djachenko/justin_utils/commit/228d5c6a183707aeb0fb5f5b6547d747ecc9e94d))
+
+- Type pylinq and drop its mypy exemption
+  ([`6676c35`](https://github.com/djachenko/justin_utils/commit/6676c35320a31fdd2e89126f3d7f0f7c6c45f125))
+
+
 ## v0.5.0 (2026-09-05)
 
 ### Build System
