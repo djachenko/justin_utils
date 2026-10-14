@@ -1,8 +1,8 @@
 import json
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Annotated
 
 import pytest
 
@@ -15,7 +15,6 @@ from justin_utils.dictable import (
 )
 
 MOMENT = "2026-03-01T12:00:00"
-SENTINEL = datetime.fromisoformat("1999-01-01T00:00:00")
 
 
 @dataclass
@@ -45,26 +44,31 @@ class Untimed(DictableDataclass):
 
 
 @dataclass
-class Timed(DictableDataclass):
-    moment: datetime
-
-    @classmethod
-    def rules(cls) -> dict[type, Callable]:
-        return {datetime: datetime.fromisoformat}
-
-
-@dataclass
 class PlainOuter(DictableDataclass):
     inner: Untimed
+    inners: list[Untimed] = field(default_factory=list)
 
 
 @dataclass
-class RulingOuter(DictableDataclass):
-    inner: Untimed
+class Stamped(DictableDataclass):
+    moment: Annotated[datetime, datetime.fromisoformat]
+    history: list[Annotated[datetime, datetime.fromisoformat]] = field(default_factory=list)
+
+
+@dataclass
+class Enveloped(DictableDataclass):
+    value: int
+    moment: datetime | None = None
 
     @classmethod
-    def rules(cls) -> dict[type, Callable]:
-        return {datetime: datetime.fromisoformat}
+    def from_dict(cls, json_object, rules=None):
+        return fromdict(json_object["envelope"], cls, rules)
+
+
+@dataclass
+class EnvelopedOuter(DictableDataclass):
+    inner: Enveloped
+    items: list[Enveloped] = field(default_factory=list)
 
 
 class Color:
@@ -221,10 +225,14 @@ class TestErrorPath:
 
 class TestRuleResolution:
     def test_rule_applied(self):
-        assert Timed.from_dict({"moment": MOMENT}).moment == datetime.fromisoformat(MOMENT)
+        untimed = fromdict({"moment": MOMENT}, Untimed, {datetime: datetime.fromisoformat})
 
-    def test_from_dict_needs_no_explicit_rules(self):
-        assert Timed.from_dict({"moment": MOMENT}).moment == datetime.fromisoformat(MOMENT)
+        assert untimed.moment == datetime.fromisoformat(MOMENT)
+
+    def test_from_dict_passes_rules(self):
+        untimed = Untimed.from_dict({"moment": MOMENT}, {datetime: datetime.fromisoformat})
+
+        assert untimed.moment == datetime.fromisoformat(MOMENT)
 
     def test_rule_for_base_class_applies_to_subclass(self):
         painted = fromdict({"color": "red"}, Painted, {Color: lambda v: NamedColor(f"rule:{v}")})
@@ -234,40 +242,81 @@ class TestRuleResolution:
     def test_without_rule_falls_back_to_constructor(self):
         assert fromdict({"color": "red"}, Painted).color.value == "red"
 
-    def test_class_rules_win_over_param_rules(self):
-        timed = fromdict({"moment": MOMENT}, Timed, {datetime: lambda _: SENTINEL})
-
-        assert timed.moment == datetime.fromisoformat(MOMENT)
-
-    def test_param_rules_apply_where_class_declares_none(self):
-        untimed = fromdict({"moment": MOMENT}, Untimed, {datetime: datetime.fromisoformat})
-
-        assert untimed.moment == datetime.fromisoformat(MOMENT)
-
 
 class TestRulePropagation:
-    def test_param_rules_reach_nested_classes(self):
+    def test_rules_reach_nested_classes(self):
         outer = fromdict({"inner": {"moment": MOMENT}}, PlainOuter, {datetime: datetime.fromisoformat})
 
         assert outer.inner.moment == datetime.fromisoformat(MOMENT)
 
-    def test_class_rules_do_not_leak_into_nested(self):
-        with pytest.raises(DictableError):
-            RulingOuter.from_dict({"inner": {"moment": MOMENT}})
-
-    def test_param_rules_survive_a_class_that_overrides_them(self):
-        @dataclass
-        class Mixed(DictableDataclass):
-            timed: Timed
-            untimed: Untimed
-
-        mixed = fromdict(
-            {"timed": {"moment": MOMENT}, "untimed": {"moment": MOMENT}},
-            Mixed,
+    def test_rules_reach_classes_in_list(self):
+        outer = PlainOuter.from_dict(
+            {"inner": {"moment": MOMENT}, "inners": [{"moment": MOMENT}]},
             {datetime: datetime.fromisoformat},
         )
 
-        assert mixed.timed.moment == mixed.untimed.moment
+        assert outer.inners[0].moment == datetime.fromisoformat(MOMENT)
+
+    def test_rules_reach_nested_plain_dataclass(self):
+        @dataclass
+        class Inner:
+            moment: datetime
+
+        @dataclass
+        class Outer:
+            inner: Inner
+
+        outer = fromdict({"inner": {"moment": MOMENT}}, Outer, {datetime: datetime.fromisoformat})
+
+        assert outer.inner.moment == datetime.fromisoformat(MOMENT)
+
+
+class TestAnnotated:
+    def test_parser_on_field(self):
+        assert Stamped.from_dict({"moment": MOMENT}).moment == datetime.fromisoformat(MOMENT)
+
+    def test_parser_inside_list(self):
+        stamped = Stamped.from_dict({"moment": MOMENT, "history": [MOMENT, MOMENT]})
+
+        assert stamped.history == [datetime.fromisoformat(MOMENT)] * 2
+
+    @pytest.mark.parametrize("field_type", [
+        Annotated[datetime, datetime.fromisoformat] | None,
+        Annotated[datetime | None, datetime.fromisoformat],
+    ])
+    @pytest.mark.parametrize("value, expected", [
+        (None, None),
+        (MOMENT, datetime.fromisoformat(MOMENT)),
+    ])
+    def test_optional_parser(self, field_type, value, expected):
+        @dataclass
+        class Maybe:
+            moment: field_type = None
+
+        assert fromdict({"moment": value}, Maybe).moment == expected
+
+
+class TestOverride:
+    def test_nested_override_is_used(self):
+        outer = EnvelopedOuter.from_dict({"inner": {"envelope": {"value": 1}}})
+
+        assert outer.inner.value == 1
+
+    def test_rules_reach_override(self):
+        outer = EnvelopedOuter.from_dict(
+            {"inner": {"envelope": {"value": 1, "moment": MOMENT}}},
+            {datetime: datetime.fromisoformat},
+        )
+
+        assert outer.inner.moment == datetime.fromisoformat(MOMENT)
+
+    def test_error_path_passes_through_override(self):
+        ok = {"envelope": {"value": 1}}
+
+        with pytest.raises(DictableError) as info:
+            EnvelopedOuter.from_dict({"inner": ok, "items": [ok, ok, {"envelope": {}}]})
+
+        assert info.value.path == "EnvelopedOuter.items[2].value"
 
 
 class TestLogging:
@@ -355,7 +404,7 @@ class TestFromdictFunction:
             value: int
 
             @classmethod
-            def from_dict(cls, json_object):
+            def from_dict(cls, json_object, rules=None):
                 return cls(value=json_object["raw"] * 10)
 
             def as_dict(self):
@@ -529,4 +578,6 @@ class TestFrompath:
             },
         )
 
-        assert frompath(temp_dir / file_name, Timed).moment == datetime.fromisoformat(MOMENT)
+        untimed = frompath(temp_dir / file_name, Untimed, {datetime: datetime.fromisoformat})
+
+        assert untimed.moment == datetime.fromisoformat(MOMENT)

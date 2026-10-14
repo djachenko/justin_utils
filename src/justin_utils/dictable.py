@@ -1,12 +1,13 @@
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import MISSING, Field, asdict, fields, is_dataclass
 from json import JSONDecodeError
 from pathlib import Path
 from types import NoneType, UnionType
-from typing import Any, ClassVar, Protocol, Self, TypeVar, get_args, get_origin
+from typing import Annotated, Any, ClassVar, Protocol, Self, TypeVar, Union, get_args, get_origin
 
 log = logging.getLogger("justin_utils.dictable")
 
@@ -23,21 +24,27 @@ V = TypeVar("V", bound=DataclassLike)
 
 
 class DictableError(Exception):
-    def __init__(self, path: str, message: str) -> None:
-        super().__init__(f"{path}: {message}")
+    """The path is assembled while the error unwinds: `tail` grows field by field, `root` names the outermost class."""
 
-        self.path = path
+    def __init__(self, path: str, message: str) -> None:
+        super().__init__(path, message)
+
+        self.root = path
+        self.tail = ""
         self.message = message
+
+    @property
+    def path(self) -> str:
+        return f"{self.root}{self.tail}"
+
+    def __str__(self) -> str:
+        return f"{self.path}: {self.message}"
 
 
 class Dictable(ABC):
     @classmethod
-    def rules(cls) -> Rules:
-        return {}
-
-    @classmethod
     @abstractmethod
-    def from_dict(cls, json_object: Json) -> Self:
+    def from_dict(cls, json_object: Json, rules: Rules | None = None) -> Self:
         pass
 
     @abstractmethod
@@ -49,8 +56,8 @@ class DictableDataclass(Dictable):
     __dataclass_fields__: ClassVar[dict[str, Field[Any]]]
 
     @classmethod
-    def from_dict(cls, json_object: Json) -> Self:
-        return fromdict(json_object, cls)
+    def from_dict(cls, json_object: Json, rules: Rules | None = None) -> Self:
+        return fromdict(json_object, cls, rules)
 
     def as_dict(self) -> Mapping[str, Any]:
         if not is_dataclass(self):
@@ -61,7 +68,15 @@ class DictableDataclass(Dictable):
 
 def _unwrap_optional(field_type: Any) -> tuple[Any, bool]:
     """Returns the type without None and a flag telling whether None is allowed."""
-    if get_origin(field_type) is not UnionType:
+    origin = get_origin(field_type)
+
+    if origin is Annotated:
+        inner_type, *metadata = get_args(field_type)
+        unwrapped, optional = _unwrap_optional(inner_type)
+
+        return Annotated[unwrapped, *metadata], optional
+
+    if origin not in (UnionType, Union):
         return field_type, False
 
     args = get_args(field_type)
@@ -97,37 +112,57 @@ def _default(field: Field) -> Any:
     return field.default
 
 
-def _convert(value: Json, field_type: Any, rules: Rules, effective: Rules, path: str) -> Any:
-    rule = _rule(field_type, effective)
+@contextmanager
+def _segment(segment: str) -> Iterator[None]:
+    """Prepends a path segment to a DictableError passing through, so the path is built on the way back."""
+    try:
+        yield
+    except DictableError as error:
+        error.tail = f"{segment}{error.tail}"
+
+        raise
+
+
+def _parse(parser: Callable[[Json], Any], value: Json, name: str) -> Any:
+    try:
+        return parser(value)
+    except (TypeError, ValueError) as e:
+        raise DictableError("", f"{name} rejected {value!r}: {e}") from e
+
+
+def _convert(value: Json, field_type: Any, rules: Rules) -> Any:
+    origin = get_origin(field_type)
+
+    if origin is Annotated:
+        inner_type, parser, *_ = get_args(field_type)
+
+        return _parse(parser, value, f"parser for {inner_type}")
+
+    rule = _rule(field_type, rules)
 
     if rule is not None:
-        try:
-            return rule(value)
-        except (TypeError, ValueError) as e:
-            raise DictableError(path, f"rule for {field_type} rejected {value!r}: {e}") from e
-
-    origin = get_origin(field_type)
+        return _parse(rule, value, f"rule for {field_type}")
 
     if origin in (list, tuple):
         if not isinstance(value, list):
-            raise DictableError(path, f"expected a list, got {type(value).__name__}")
+            raise DictableError("", f"expected a list, got {type(value).__name__}")
 
         args = get_args(field_type)
         element_type = args[0] if args else Any
+        items = []
 
-        return origin(
-            _convert(item, element_type, rules, effective, f"{path}[{index}]") for index, item in enumerate(value)
-        )
+        for index, item in enumerate(value):
+            with _segment(f"[{index}]"):
+                items.append(_convert(item, element_type, rules))
+
+        return origin(items)
 
     if isinstance(field_type, type):
-        if issubclass(field_type, DictableDataclass):
-            return _fromdict(value, field_type, rules, path)
-
         if issubclass(field_type, Dictable):
-            return field_type.from_dict(value)
+            return field_type.from_dict(value, rules)
 
         if is_dataclass(field_type):
-            return _fromdict(value, field_type, rules, path)
+            return fromdict(value, field_type, rules)
 
     if field_type is Any:
         return value
@@ -135,61 +170,49 @@ def _convert(value: Json, field_type: Any, rules: Rules, effective: Rules, path:
     try:
         return field_type(value)
     except (TypeError, ValueError) as e:
-        raise DictableError(path, f"cannot convert {value!r} to {field_type}: {e}") from e
+        raise DictableError("", f"cannot convert {value!r} to {field_type}: {e}") from e
 
 
-def _effective(data_class: type, rules: Rules) -> Rules:
-    """A class's own rules take precedence over the general ones passed in."""
-    if not issubclass(data_class, Dictable):
-        return rules
+def _field_value(obj: dict[str, Json], field: Field, rules: Rules, data_class: type) -> Any:
+    field_type, optional = _unwrap_optional(field.type)
 
-    own = data_class.rules()
+    if field.name not in obj:
+        if not _has_default(field):
+            raise DictableError("", "field is missing and has no default")
 
-    if not own:
-        return rules
+        log.debug("%s.%s is missing, using default", data_class.__name__, field.name)
 
-    return {**rules, **own}
+        return _default(field)
 
+    value = obj[field.name]
 
-def _fromdict(obj: Json, data_class: type[V], rules: Rules, path: str) -> V:
-    if not isinstance(obj, dict):
-        raise DictableError(path, f"expected an object, got {type(obj).__name__}")
+    if value is None:
+        if not optional:
+            raise DictableError("", "null in a field that does not allow None")
 
-    effective = _effective(data_class, rules)
+        return None
 
-    result: dict[str, Any] = {}
-
-    for field in fields(data_class):
-        field_path = f"{path}.{field.name}"
-        field_type, optional = _unwrap_optional(field.type)
-
-        if field.name not in obj:
-            if not _has_default(field):
-                raise DictableError(field_path, "field is missing and has no default")
-
-            result[field.name] = _default(field)
-
-            log.debug("%s is missing, using default", field_path)
-
-            continue
-
-        value = obj[field.name]
-
-        if value is None:
-            if not optional:
-                raise DictableError(field_path, "null in a field that does not allow None")
-
-            result[field.name] = None
-
-            continue
-
-        result[field.name] = _convert(value, field_type, rules, effective, field_path)
-
-    return data_class(**result)
+    return _convert(value, field_type, rules)
 
 
 def fromdict(obj: Json, data_class: type[V], rules: Rules | None = None) -> V:
-    return _fromdict(obj, data_class, rules or {}, data_class.__name__)
+    """Walks the fields itself, never via `data_class.from_dict`: an override calls it to get the default parsing."""
+    try:
+        if not isinstance(obj, dict):
+            raise DictableError("", f"expected an object, got {type(obj).__name__}")
+
+        result: dict[str, Any] = {}
+        rules = rules or {}
+
+        for field in fields(data_class):
+            with _segment(f".{field.name}"):
+                result[field.name] = _field_value(obj, field, rules, data_class)
+
+        return data_class(**result)
+    except DictableError as error:
+        error.root = data_class.__name__
+
+        raise
 
 
 def _first_significant_byte(path: Path) -> bytes:
@@ -209,4 +232,6 @@ def frompath(path: Path, data_class: type[V], rules: Rules | None = None) -> V:
     except (JSONDecodeError, UnicodeDecodeError) as error:
         raise DictableError(str(path), f"invalid json: {error}") from error
     except DictableError as error:
-        raise DictableError(f"{path} → {error.path}", error.message) from error
+        error.root = f"{path} → {error.root}"
+
+        raise
