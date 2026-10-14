@@ -1,4 +1,10 @@
+import sys
 from abc import ABC, abstractmethod
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from justin_utils.singleton import Singleton
 
@@ -6,6 +12,9 @@ Version = int
 JsonObject = dict
 
 
+@deprecated(
+    "json_migration.py has no consumers in the ecosystem; confirm it's still needed before relying on it",
+)
 class JsonMigration(ABC):
     @property
     @abstractmethod
@@ -17,6 +26,9 @@ class JsonMigration(ABC):
         pass
 
 
+@deprecated(
+    "json_migration.py has no consumers in the ecosystem; confirm it's still needed before relying on it",
+)
 class JsonMigrator(Singleton):
     __OBJECT_VERSION_KEY = "version"
 
@@ -38,9 +50,7 @@ class JsonMigrator(Singleton):
         else:
             version = 0
 
-        eligible_keys = self.__migrations.keys()
-        eligible_keys = filter(lambda k: k > version, eligible_keys)
-        eligible_keys = sorted(eligible_keys)
+        eligible_keys = sorted(key for key in self.__migrations if key > version)
 
         migrations = [self.__migrations[key] for key in eligible_keys]
 

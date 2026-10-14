@@ -37,6 +37,7 @@ singleton  = []
 pylinq     = []
 other      = [
     "justin_utils[singleton]",
+    "typing_extensions; python_version < '3.13'",
 ]
 filesystem = [
     "justin_utils[other]",
@@ -112,7 +113,6 @@ python_version = "3.11"
 [[tool.mypy.overrides]]
 module = [
     "justin_utils.cli",
-    "justin_utils.json_migration",
 ]
 ignore_errors = true
 
