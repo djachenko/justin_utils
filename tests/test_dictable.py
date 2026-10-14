@@ -334,6 +334,39 @@ class TestFromdictFunction:
         with pytest.raises(DictableError):
             fromdict({}, Plain)
 
+    def test_nested_plain_dataclass_is_parsed(self):
+        @dataclass
+        class Inner:
+            value: int
+
+        @dataclass
+        class Outer:
+            inner: Inner
+
+        parsed = fromdict({"inner": {"value": 1}}, Outer)
+
+        assert parsed.inner == Inner(value=1)
+
+    def test_nested_dataclass_keeps_own_from_dict(self):
+        @dataclass
+        class Inner(Dictable):
+            value: int
+
+            @classmethod
+            def from_dict(cls, json_object):
+                return cls(value=json_object["raw"] * 10)
+
+            def as_dict(self):
+                return {"raw": self.value // 10}
+
+        @dataclass
+        class Outer:
+            inner: Inner
+
+        parsed = fromdict({"inner": {"raw": 1}}, Outer)
+
+        assert parsed.inner == Inner(value=10)
+
     def test_rules_apply_to_plain_dataclass(self):
         @dataclass
         class Plain:
