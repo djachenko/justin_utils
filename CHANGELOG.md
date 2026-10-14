@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.6.2 (2026-10-14)
+
+### Refactoring
+
+- Name fixture files once per test via local file_name
+  ([`b887d65`](https://github.com/djachenko/justin_utils/commit/b887d65d0acd6dffe2976319b528fecd80b7e237))
+
+
 ## v0.6.1 (2026-10-14)
 
 ### Bug Fixes
