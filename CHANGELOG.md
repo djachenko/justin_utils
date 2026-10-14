@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v0.6.1 (2026-10-14)
+
+### Bug Fixes
+
+- Parse nested plain dataclasses recursively in fromdict
+  ([`76e0038`](https://github.com/djachenko/justin_utils/commit/76e00387fbbc373914a0a260227596128a98f4b1))
+
+### Chores
+
+- Mark json_migration classes as deprecated
+  ([`9534664`](https://github.com/djachenko/justin_utils/commit/95346643d98e3daa82ea6f6336a870dbec506568))
+
+### Refactoring
+
+- Fix mypy errors in json_migration
+  ([`1b0fd30`](https://github.com/djachenko/justin_utils/commit/1b0fd30e0f3197d017e23278754a75a2bc958124))
+
+- Group type-based branches in _convert under one isinstance check
+  ([`751c8a7`](https://github.com/djachenko/justin_utils/commit/751c8a702eb5164c22103f1677019f0b1124de52))
+
+### Testing
+
+- Nested dataclass keeps its own from_dict
+  ([`14b22ac`](https://github.com/djachenko/justin_utils/commit/14b22acc6e27701e93bc8ba567491bfe82b24866))
+
+- Remove duplicate test_scalar_coercion
+  ([`2546206`](https://github.com/djachenko/justin_utils/commit/2546206ffa0c3c5dea96e2b811edbeb5a007e145))
+
+
 ## v0.6.0 (2026-10-08)
 
 ### Features
