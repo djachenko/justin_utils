@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -385,6 +386,33 @@ class TestFrompath:
 
         assert info.value.path == str(apple_double)
         assert "invalid json" in info.value.message
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            b"\x00\x00\x00\x18ftypmp42" + b"\x00" * 1024,
+            b"name,size\nphoto.jpg,1\n",
+            b"[2026-10-15 04:34] started\n",
+        ],
+        ids=["binary", "utf8_text", "bracketed_log"],
+    )
+    def test_non_json_is_rejected_without_full_read(self, temp_dir, create_files, monkeypatch, content):
+        create_files(temp_dir, {"download": content})
+
+        def fail_read_text(*args, **kwargs):
+            raise AssertionError("whole file was read")
+
+        monkeypatch.setattr(Path, "read_text", fail_read_text)
+
+        with pytest.raises(DictableError) as info:
+            frompath(temp_dir / "download", Leaf)
+
+        assert "invalid json" in info.value.message
+
+    def test_leading_whitespace_is_allowed(self, temp_dir, create_files):
+        create_files(temp_dir, {"leaf.json": '\n \t{"name": "indented"}'})
+
+        assert frompath(temp_dir / "leaf.json", Leaf).name == "indented"
 
     def test_structure_mismatch_names_the_file(self, temp_dir, create_files):
         create_files(temp_dir, {"leaf.json": "{}"})
