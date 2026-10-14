@@ -37,6 +37,7 @@ singleton  = []
 pylinq     = []
 other      = [
     "justin_utils[singleton]",
+    "typing_extensions; python_version < '3.13'",
 ]
 filesystem = [
     "justin_utils[other]",
