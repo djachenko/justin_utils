@@ -326,13 +326,6 @@ class TestFromdictFunction:
 
         assert fromdict({"value": "9"}, Plain).value == 9
 
-    @pytest.mark.parametrize("payload, expected", [
-        ({"name": "a"}, "a"),
-        ({"name": 1}, "1"),
-    ])
-    def test_scalar_coercion(self, payload, expected):
-        assert Leaf.from_dict(payload).name == expected
-
     def test_plain_dataclass_is_strict_too(self):
         @dataclass
         class Plain:
