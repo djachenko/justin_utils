@@ -192,7 +192,18 @@ def fromdict(obj: Json, data_class: type[V], rules: Rules | None = None) -> V:
     return _fromdict(obj, data_class, rules or {}, data_class.__name__)
 
 
+def _first_significant_byte(path: Path) -> bytes:
+    with path.open("rb") as file:
+        while (byte := file.read(1)).isspace():
+            pass
+
+        return byte
+
+
 def frompath(path: Path, data_class: type[V], rules: Rules | None = None) -> V:
+    if _first_significant_byte(path) != b"{":
+        raise DictableError(str(path), "invalid json: not an object")
+
     try:
         return fromdict(json.loads(path.read_text()), data_class, rules)
     except (JSONDecodeError, UnicodeDecodeError) as error:
