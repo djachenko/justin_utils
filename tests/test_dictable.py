@@ -334,6 +334,19 @@ class TestFromdictFunction:
         with pytest.raises(DictableError):
             fromdict({}, Plain)
 
+    def test_nested_plain_dataclass_is_parsed(self):
+        @dataclass
+        class Inner:
+            value: int
+
+        @dataclass
+        class Outer:
+            inner: Inner
+
+        parsed = fromdict({"inner": {"value": 1}}, Outer)
+
+        assert parsed.inner == Inner(value=1)
+
     def test_rules_apply_to_plain_dataclass(self):
         @dataclass
         class Plain:
