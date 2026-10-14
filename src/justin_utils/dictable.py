@@ -119,14 +119,15 @@ def _convert(value: Json, field_type: Any, rules: Rules, effective: Rules, path:
             _convert(item, element_type, rules, effective, f"{path}[{index}]") for index, item in enumerate(value)
         )
 
-    if isinstance(field_type, type) and issubclass(field_type, DictableDataclass):
-        return _fromdict(value, field_type, rules, path)
+    if isinstance(field_type, type):
+        if issubclass(field_type, DictableDataclass):
+            return _fromdict(value, field_type, rules, path)
 
-    if isinstance(field_type, type) and issubclass(field_type, Dictable):
-        return field_type.from_dict(value)
+        if issubclass(field_type, Dictable):
+            return field_type.from_dict(value)
 
-    if isinstance(field_type, type) and is_dataclass(field_type):
-        return _fromdict(value, field_type, rules, path)
+        if is_dataclass(field_type):
+            return _fromdict(value, field_type, rules, path)
 
     if field_type is Any:
         return value
