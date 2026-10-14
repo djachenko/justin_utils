@@ -390,10 +390,12 @@ class TestFrompath:
             frompath(temp_dir, Leaf)
 
     def test_reads_object(self, temp_dir, create_files):
+        file_name = "leaf.json"
+
         create_files(
             temp_dir,
             {
-                "leaf.json": json.dumps(
+                file_name: json.dumps(
                     {
                         "name": "from file",
                     },
@@ -401,7 +403,7 @@ class TestFrompath:
             },
         )
 
-        assert frompath(temp_dir / "leaf.json", Leaf).name == "from file"
+        assert frompath(temp_dir / file_name, Leaf).name == "from file"
 
     def test_decode_error_propagates(self, temp_dir, create_files):
         create_files(temp_dir, {"leaf.json": "{}"})
@@ -440,10 +442,12 @@ class TestFrompath:
         ids=["binary", "utf8_text", "bracketed_log"],
     )
     def test_non_json_is_rejected_without_full_read(self, temp_dir, create_files, monkeypatch, content):
+        file_name = "download"
+
         create_files(
             temp_dir,
             {
-                "download": content,
+                file_name: content,
             },
         )
 
@@ -453,19 +457,21 @@ class TestFrompath:
         monkeypatch.setattr(Path, "read_text", fail_read_text)
 
         with pytest.raises(DictableError) as info:
-            frompath(temp_dir / "download", Leaf)
+            frompath(temp_dir / file_name, Leaf)
 
         assert "invalid json" in info.value.message
 
     def test_leading_whitespace_is_allowed(self, temp_dir, create_files):
+        file_name = "leaf.json"
+
         create_files(
             temp_dir,
             {
-                "leaf.json": '\n \t{"name": "indented"}',
+                file_name: '\n \t{"name": "indented"}',
             },
         )
 
-        assert frompath(temp_dir / "leaf.json", Leaf).name == "indented"
+        assert frompath(temp_dir / file_name, Leaf).name == "indented"
 
     def test_structure_mismatch_names_the_file(self, temp_dir, create_files):
         create_files(temp_dir, {"leaf.json": "{}"})
@@ -489,10 +495,12 @@ class TestFrompath:
         assert "field is missing and has no default" in str(info.value)
 
     def test_nested_path_survives_wrapping(self, temp_dir, create_files):
+        file_name = "node.json"
+
         create_files(
             temp_dir,
             {
-                "node.json": json.dumps(
+                file_name: json.dumps(
                     {
                         "title": "t",
                         "leaf": {},
@@ -500,7 +508,7 @@ class TestFrompath:
                 ),
             },
         )
-        node = temp_dir / "node.json"
+        node = temp_dir / file_name
 
         with pytest.raises(DictableError) as info:
             frompath(node, Node)
@@ -508,10 +516,12 @@ class TestFrompath:
         assert info.value.path == f"{node} \u2192 Node.leaf.name"
 
     def test_rules_are_applied(self, temp_dir, create_files):
+        file_name = "timed.json"
+
         create_files(
             temp_dir,
             {
-                "timed.json": json.dumps(
+                file_name: json.dumps(
                     {
                         "moment": MOMENT,
                     },
@@ -519,4 +529,4 @@ class TestFrompath:
             },
         )
 
-        assert frompath(temp_dir / "timed.json", Timed).moment == datetime.fromisoformat(MOMENT)
+        assert frompath(temp_dir / file_name, Timed).moment == datetime.fromisoformat(MOMENT)
