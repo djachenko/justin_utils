@@ -38,9 +38,7 @@ class JsonMigrator(Singleton):
         else:
             version = 0
 
-        eligible_keys = self.__migrations.keys()
-        eligible_keys = filter(lambda k: k > version, eligible_keys)
-        eligible_keys = sorted(eligible_keys)
+        eligible_keys = sorted(key for key in self.__migrations if key > version)
 
         migrations = [self.__migrations[key] for key in eligible_keys]
 
