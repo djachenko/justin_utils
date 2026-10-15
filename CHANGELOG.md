@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-10-15)
+
+### Features
+
+- Follow Codable semantics in dictable
+  ([`fb7df96`](https://github.com/djachenko/justin_utils/commit/fb7df9675ca34652b2a5dd3f2d1e8c9ec629ce8a))
+
+### Testing
+
+- Pin dictable behaviors uncovered by mutation sweep
+  ([`68824cc`](https://github.com/djachenko/justin_utils/commit/68824ccd325f68ebd0fd5f52ea0e860c6ddd5cf5))
+
+### Breaking Changes
+
+- Dictable.rules() is removed; pass rules to fromdict or from_dict instead. from_dict takes a rules
+  argument: from_dict(cls, json_object, rules=None).
+
+
 ## v0.6.2 (2026-10-14)
 
 ### Refactoring
