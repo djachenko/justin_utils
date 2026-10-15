@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import pytest
 
@@ -131,6 +131,37 @@ class TestNested:
         assert [leaf.name for leaf in node.leaves] == ["one", "two"]
         assert all(isinstance(leaf, Leaf) for leaf in node.leaves)
 
+    def test_tuple_of_scalars(self):
+        @dataclass
+        class Pair:
+            values: tuple[int, ...]
+
+        assert fromdict({"values": ["1", "2"]}, Pair).values == (1, 2)
+
+    def test_bare_list_keeps_items_as_is(self):
+        @dataclass
+        class Bag:
+            items: list
+
+        assert fromdict({"items": [1, {"a": 2}]}, Bag).items == [1, {"a": 2}]
+
+    def test_any_field_keeps_value_as_is(self):
+        @dataclass
+        class Loose:
+            payload: Any
+
+        assert fromdict({"payload": {"a": [1]}}, Loose).payload == {"a": [1]}
+
+    def test_optional_nested_dictable(self):
+        @dataclass
+        class MaybeLeaf(DictableDataclass):
+            leaf: Leaf | None
+
+        assert MaybeLeaf.from_dict({"leaf": {"name": "l"}}).leaf == Leaf(name="l")
+
+    def test_extra_keys_are_ignored(self):
+        assert Leaf.from_dict({"name": "l", "unknown": 1}) == Leaf(name="l")
+
 
 class TestMissingFields:
     def test_missing_without_default_raises(self):
@@ -196,6 +227,18 @@ class TestConversion:
         with pytest.raises(DictableError):
             Leaf.from_dict([])
 
+    def test_string_for_list_raises(self):
+        with pytest.raises(DictableError):
+            Node.from_dict({"title": "t", "leaf": {"name": "l"}, "tags": "ab"})
+
+    def test_union_of_several_types_raises(self):
+        @dataclass
+        class Either:
+            value: int | str
+
+        with pytest.raises(DictableError):
+            fromdict({"value": "1"}, Either)
+
 
 class TestErrorPath:
     def test_top_level_field(self):
@@ -222,6 +265,42 @@ class TestErrorPath:
 
         assert "Node.leaf.name" in str(info.value)
 
+    def test_nested_list_index(self):
+        @dataclass
+        class Grid:
+            rows: list[list[int]]
+
+        with pytest.raises(DictableError) as info:
+            fromdict({"rows": [[1], [2, "x"]]}, Grid)
+
+        assert info.value.path == "Grid.rows[1][1]"
+
+    def test_nested_plain_dataclass(self):
+        @dataclass
+        class Inner:
+            value: int
+
+        @dataclass
+        class Outer:
+            inner: Inner
+
+        with pytest.raises(DictableError) as info:
+            fromdict({"inner": {}}, Outer)
+
+        assert info.value.path == "Outer.inner.value"
+
+    def test_rule_failure(self):
+        with pytest.raises(DictableError) as info:
+            fromdict({"moment": "garbage"}, Untimed, {datetime: datetime.fromisoformat})
+
+        assert info.value.path == "Untimed.moment"
+
+    def test_parser_failure_inside_list(self):
+        with pytest.raises(DictableError) as info:
+            Stamped.from_dict({"moment": MOMENT, "history": [MOMENT, "garbage"]})
+
+        assert info.value.path == "Stamped.history[1]"
+
 
 class TestRuleResolution:
     def test_rule_applied(self):
@@ -241,6 +320,23 @@ class TestRuleResolution:
 
     def test_without_rule_falls_back_to_constructor(self):
         assert fromdict({"color": "red"}, Painted).color.value == "red"
+
+    def test_nearest_base_rule_wins(self):
+        rules = {
+            Color: lambda v: NamedColor(f"base:{v}"),
+            NamedColor: lambda v: NamedColor(f"own:{v}"),
+        }
+
+        assert fromdict({"color": "red"}, Painted, rules).color.value == "own:red"
+
+    def test_rule_for_generic_origin_is_ignored(self):
+        node = fromdict(
+            {"title": "t", "leaf": {"name": "l"}, "tags": ["a"]},
+            Node,
+            {list: lambda _: ["rule"]},
+        )
+
+        assert node.tags == ["a"]
 
 
 class TestRulePropagation:
@@ -279,6 +375,18 @@ class TestAnnotated:
         stamped = Stamped.from_dict({"moment": MOMENT, "history": [MOMENT, MOMENT]})
 
         assert stamped.history == [datetime.fromisoformat(MOMENT)] * 2
+
+    def test_parser_wins_over_rule(self):
+        stamped = Stamped.from_dict({"moment": MOMENT}, {datetime: lambda _: None})
+
+        assert stamped.moment == datetime.fromisoformat(MOMENT)
+
+    def test_parser_is_first_metadata(self):
+        @dataclass
+        class Documented:
+            moment: Annotated[datetime, datetime.fromisoformat, "a note"]
+
+        assert fromdict({"moment": MOMENT}, Documented).moment == datetime.fromisoformat(MOMENT)
 
     @pytest.mark.parametrize("field_type", [
         Annotated[datetime, datetime.fromisoformat] | None,
